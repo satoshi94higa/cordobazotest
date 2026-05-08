@@ -153,7 +153,7 @@ export const CORDOBAZO_POINTS: CordobazoPoint[] = [
     description: "Escena histórica del Cordobazo.",
     lat: -31.412653466557398,
     lng: -64.18563543269703,
-    historicalPhoto: "/fotos/AS_146.jpg",
+    historicalPhoto: "/fotos/AS-146.jpg",
     currentPhoto: ""
   },
   {
@@ -163,7 +163,7 @@ export const CORDOBAZO_POINTS: CordobazoPoint[] = [
     description: "Escena histórica del Cordobazo.",
     lat: -31.413046573685328,
     lng: -64.18525669068276,
-    historicalPhoto: "/fotos/AS_148.jpg",
+    historicalPhoto: "/fotos/AS-148.jpg",
     currentPhoto: ""
   },
   {

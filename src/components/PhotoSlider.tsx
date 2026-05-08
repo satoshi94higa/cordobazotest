@@ -62,42 +62,57 @@ export function PhotoSlider({
         <AnimatePresence mode="wait">
           {viewMode === 'side-by-side' && (
             <motion.div key="side" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="grid grid-cols-2 gap-px bg-editorial-text/10 h-full w-full">
-              <div className="relative flex items-center justify-center overflow-hidden bg-black">
-                <img 
-                  src={historical} 
-                  className={cn(
-                    "block grayscale sepia-[0.2]",
-                    isModal ? "max-w-full max-h-[85vh]" : "max-h-[60vh] object-contain"
-                  )} 
-                  referrerPolicy="no-referrer" 
-                />
+              <div className="relative flex items-center justify-center overflow-hidden bg-black min-h-[300px]">
+                {historical ? (
+                  <img 
+                    src={historical} 
+                    alt="Vista 1969"
+                    className={cn(
+                      "block grayscale sepia-[0.2]",
+                      isModal ? "max-w-full max-h-[85vh]" : "max-h-[60vh] object-contain"
+                    )} 
+                    referrerPolicy="no-referrer" 
+                  />
+                ) : (
+                  <div className="text-white/20 text-[10px] uppercase tracking-widest font-bold">Foto histórica no disponible</div>
+                )}
                 <div className="absolute top-4 left-4 bg-black/50 text-white text-[9px] font-bold uppercase px-2 py-1 tracking-widest">1969</div>
               </div>
-              <div className="relative flex items-center justify-center overflow-hidden bg-black">
-                <img 
-                  src={current} 
-                  className={cn(
-                    "block",
-                    isModal ? "max-w-full max-h-[85vh]" : "max-h-[60vh] object-contain"
-                  )} 
-                  referrerPolicy="no-referrer" 
-                />
+              <div className="relative flex items-center justify-center overflow-hidden bg-black min-h-[300px]">
+                {current ? (
+                  <img 
+                    src={current} 
+                    alt="Vista Actual"
+                    className={cn(
+                      "block",
+                      isModal ? "max-w-full max-h-[85vh]" : "max-h-[60vh] object-contain"
+                    )} 
+                    referrerPolicy="no-referrer" 
+                  />
+                ) : (
+                  <div className="text-white/20 text-[10px] uppercase tracking-widest font-bold">Foto actual no disponible</div>
+                )}
                 <div className="absolute top-4 left-4 bg-brand-primary/90 text-white text-[9px] font-bold uppercase px-2 py-1 tracking-widest">Hoy</div>
               </div>
             </motion.div>
           )}
 
           {viewMode === 'toggle' && (
-            <motion.div key="toggle" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="relative flex items-center justify-center bg-black/10">
-              <img 
-                src={activeToggle === 'hist' ? historical : current} 
-                className={cn(
-                  "block transition-all duration-500", 
-                  activeToggle === 'hist' && "grayscale sepia-[0.2]",
-                  isModal ? "max-w-full max-h-[85vh] w-auto h-auto" : "w-full h-auto max-h-[60vh] object-contain"
-                )} 
-                referrerPolicy="no-referrer"
-              />
+            <motion.div key="toggle" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="relative flex items-center justify-center bg-black/10 min-h-[400px]">
+              {(activeToggle === 'hist' ? historical : current) ? (
+                <img 
+                  src={activeToggle === 'hist' ? historical : current} 
+                  alt={activeToggle === 'hist' ? "Vista 1969" : "Vista Actual"}
+                  className={cn(
+                    "block transition-all duration-500", 
+                    activeToggle === 'hist' && "grayscale sepia-[0.2]",
+                    isModal ? "max-w-full max-h-[85vh] w-auto h-auto" : "w-full h-auto max-h-[60vh] object-contain"
+                  )} 
+                  referrerPolicy="no-referrer"
+                />
+              ) : (
+                <div className="text-black/20 text-[10px] uppercase tracking-widest font-bold">Imagen no disponible</div>
+              )}
               <div className="absolute bottom-6 left-1/2 -translate-x-1/2 w-full max-w-[90%] flex gap-4">
                 <button 
                   onMouseDown={(e) => e.stopPropagation()}
@@ -121,40 +136,49 @@ export function PhotoSlider({
             <motion.div 
               key="slider"
               initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-              className="relative cursor-ew-resize overflow-hidden flex items-center justify-center"
+              className="relative cursor-ew-resize overflow-hidden flex items-center justify-center min-h-[400px] w-full"
             >
-              <img 
-                src={current} 
-                alt="Actual" 
-                className={cn(
-                  "block pointer-events-none",
-                  isModal ? "max-w-full max-h-[85vh] w-auto h-auto" : "w-full h-auto max-h-[60vh] object-contain"
-                )} 
-                referrerPolicy="no-referrer" 
-              />
-              <div 
-                className="absolute inset-y-0 left-0 overflow-hidden pointer-events-none flex items-center h-full" 
-                style={{ width: `${sliderPos}%` }}
-              >
+              {current ? (
                 <img 
-                  src={historical} 
-                  alt="Histórica" 
+                  src={current} 
+                  alt="Vista Actual" 
                   className={cn(
-                    "max-none grayscale sepia-[0.2] h-full",
-                    isModal ? "max-h-[85vh] w-auto" : "max-h-[60vh] w-auto"
+                    "block pointer-events-none",
+                    isModal ? "max-w-full max-h-[85vh] w-auto h-auto" : "w-full h-auto max-h-[60vh] object-contain"
                   )} 
-                  style={{ 
-                    width: `${100 / (sliderPos / 100)}%`,
-                    objectFit: 'cover'
-                  }} 
                   referrerPolicy="no-referrer" 
                 />
-              </div>
-              <div className="absolute inset-y-0 w-1 bg-white/80 shadow-[0_0_15px_rgba(0,0,0,0.5)] pointer-events-none" style={{ left: `${sliderPos}%` }}>
-                <div className="absolute top-1/2 -translate-x-1/2 -translate-y-1/2 w-10 h-10 bg-white rounded-full shadow-2xl flex items-center justify-center border-4 border-brand-primary">
-                  <ArrowLeftRight size={18} className="text-brand-primary" />
-                </div>
-              </div>
+              ) : (
+                <div className="text-black/20 text-[10px] uppercase tracking-widest font-bold">Vista Actual no disponible</div>
+              )}
+              
+              {historical && current && (
+                <>
+                  <div 
+                    className="absolute inset-y-0 left-0 overflow-hidden pointer-events-none flex items-center h-full" 
+                    style={{ width: `${sliderPos}%` }}
+                  >
+                    <img 
+                      src={historical} 
+                      alt="Vista 1969" 
+                      className={cn(
+                        "max-none grayscale sepia-[0.2] h-full",
+                        isModal ? "max-h-[85vh] w-auto" : "max-h-[60vh] w-auto"
+                      )} 
+                      style={{ 
+                        width: `${100 / (sliderPos / 100)}%`,
+                        objectFit: 'cover'
+                      }} 
+                      referrerPolicy="no-referrer" 
+                    />
+                  </div>
+                  <div className="absolute inset-y-0 w-1 bg-white/80 shadow-[0_0_15px_rgba(0,0,0,0.5)] pointer-events-none" style={{ left: `${sliderPos}%` }}>
+                    <div className="absolute top-1/2 -translate-x-1/2 -translate-y-1/2 w-10 h-10 bg-white rounded-full shadow-2xl flex items-center justify-center border-4 border-brand-primary">
+                      <ArrowLeftRight size={18} className="text-brand-primary" />
+                    </div>
+                  </div>
+                </>
+              )}
             </motion.div>
           )}
         </AnimatePresence>
