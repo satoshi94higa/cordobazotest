@@ -1,27 +1,30 @@
-import { MapContainer, TileLayer, Marker, Popup, useMap, ZoomControl, useMapEvents } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup, useMap, ZoomControl, useMapEvents, Tooltip } from 'react-leaflet';
 import L from 'leaflet';
 import { CordobazoPoint } from '@/src/data';
 import { useEffect } from 'react';
 
-const customIcon = L.divIcon({
+const createCustomIcon = (order: number, isSelected: boolean) => L.divIcon({
   className: 'custom-marker',
-  html: `<div class="w-6 h-6 bg-brand-primary rounded-full border-2 border-white shadow-lg relative">
-           <div class="absolute inset-0 bg-brand-primary rounded-full animate-ping opacity-20"></div>
+  html: `<div class="flex items-center justify-center relative">
+           <div class="w-7 h-7 ${isSelected ? 'bg-editorial-text scale-110 shadow-2xl z-[1001]' : 'bg-brand-primary'} rounded-full border-2 border-white shadow-lg flex items-center justify-center transition-all duration-300">
+             <span class="text-[10px] font-bold text-white font-mono">${order}</span>
+           </div>
+           ${isSelected ? '<div class="absolute -inset-1 bg-brand-primary rounded-full animate-ping opacity-30"></div>' : ''}
          </div>`,
-  iconSize: [24, 24],
-  iconAnchor: [12, 12],
+  iconSize: [28, 28],
+  iconAnchor: [14, 14],
 });
 
 interface MapProps {
   points: CordobazoPoint[];
   onSelectPoint: (point: CordobazoPoint | null) => void;
-  selectedPointId?: string;
+  selectedPointId?: string | null;
 }
 
 function ChangeView({ center, zoom }: { center: [number, number]; zoom: number }) {
   const map = useMap();
   useEffect(() => {
-    map.setView(center, zoom);
+    map.setView(center, zoom, { animate: true, duration: 1 });
   }, [center, zoom, map]);
   return null;
 }
@@ -68,12 +71,17 @@ export function LeafletMap({ points, onSelectPoint, selectedPointId }: MapProps)
         <Marker 
           key={point.id} 
           position={[point.lat, point.lng]} 
-          icon={customIcon}
+          icon={createCustomIcon(point.order, selectedPointId === point.id)}
           eventHandlers={{
             click: () => onSelectPoint(point),
           }}
+          zIndexOffset={selectedPointId === point.id ? 1000 : 0}
         >
-          {/* We use a subtle popup if needed, but the main info is in the side panel */}
+          <Tooltip direction="top" offset={[0, -10]} opacity={1}>
+            <div className="px-2 py-1 bg-white font-bold text-[10px] uppercase tracking-wider border border-brand-primary/20 shadow-sm">
+              {point.title}
+            </div>
+          </Tooltip>
         </Marker>
       ))}
 
