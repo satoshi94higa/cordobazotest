@@ -1,18 +1,18 @@
 import { useState } from 'react';
 import { LeafletMap } from './components/LeafletMap';
 import { PhotoSlider } from './components/PhotoSlider';
-import { CORDOBAZO_POINTS, CordobazoPoint } from './data';
+import { NILO_POINTS, NiloPoint } from './data';
 import { motion, AnimatePresence } from 'motion/react';
 import { X, Info, Layers, MapPin, History, HelpCircle } from 'lucide-react';
 
 export default function App() {
-  const [selectedPoint, setSelectedPoint] = useState<CordobazoPoint | null>(null);
+  const [selectedPoint, setSelectedPoint] = useState<NiloPoint | null>(null);
   const [focusedPointId, setFocusedPointId] = useState<string | null>(null);
   const [showInstructions, setShowInstructions] = useState(false);
   const [showAbout, setShowAbout] = useState(false);
   const [showMobilePoints, setShowMobilePoints] = useState(false);
 
-  const pointsSorted = [...CORDOBAZO_POINTS].sort((a, b) => a.order - b.order);
+  const pointsSorted = [...NILO_POINTS].sort((a, b) => a.order - b.order);
   const currentIndex = selectedPoint ? pointsSorted.findIndex(p => p.id === selectedPoint.id) : -1;
   const hasNext = currentIndex < pointsSorted.length - 1;
   const hasPrev = currentIndex > 0;
@@ -35,9 +35,9 @@ export default function App() {
       {/* Header */}
       <header className="absolute top-0 left-0 right-0 z-[1000] p-4 md:p-8 flex justify-between items-start pointer-events-none">
         <div className="pointer-events-auto bg-editorial-bg/80 backdrop-blur-md p-3 md:p-4 border border-editorial-text/10 shadow-sm">
-          <div className="text-[8px] md:text-[10px] uppercase tracking-[0.3em] font-bold text-brand-primary mb-1 md:mb-2 text-nowrap">Fotos de ayer y hoy</div>
-          <h1 className="text-3xl md:text-5xl font-black italic uppercase tracking-tighter leading-[0.8] mb-1 md:mb-2 font-serif">
-            Cordobazo<span className="text-brand-primary italic">.1969</span>
+          <div className="text-[8px] md:text-[10px] uppercase tracking-[0.3em] font-bold text-brand-primary mb-1 md:mb-2 text-nowrap">Mapa interactivo</div>
+          <h1 className="text-lg md:text-2xl font-black uppercase tracking-tight leading-tight mb-1 md:mb-2 font-display max-w-[280px] md:max-w-md">
+            Lo que vuelve a mirarnos. <span className="text-brand-primary">El Cordobazo en la lente de Nilo Silvestrone</span>
           </h1>
           <div className="h-1 w-16 md:w-24 bg-brand-primary" />
         </div>
@@ -55,7 +55,7 @@ export default function App() {
       {/* Main Map Container */}
       <main className="w-full h-full relative">
         <LeafletMap 
-          points={CORDOBAZO_POINTS} 
+          points={NILO_POINTS} 
           onSelectPoint={(point) => {
             setSelectedPoint(point);
             setFocusedPointId(null); // Clear focus when selecting for view
@@ -107,7 +107,7 @@ export default function App() {
 
               <div className="space-y-4">
                 <div>
-                  <h2 className="text-2xl font-bold tracking-tight mb-2 italic font-serif leading-tight">
+                  <h2 className="text-2xl font-bold tracking-tight mb-2 font-display uppercase leading-tight">
                     {selectedPoint.title}
                   </h2>
                   <div className="h-1 w-12 bg-brand-primary" />
@@ -117,19 +117,6 @@ export default function App() {
                   <p className="text-sm leading-relaxed text-editorial-text font-serif italic opacity-90">
                     {selectedPoint.description}
                   </p>
-                </div>
-
-                <div className="pt-4 border-t border-editorial-text/10">
-                  <div className="grid grid-cols-2 gap-px bg-editorial-text/10 border border-editorial-text/10">
-                    <div className="p-3 bg-editorial-bg">
-                      <span className="block text-[8px] uppercase tracking-[0.2em] font-bold opacity-40 mb-1">Latitud</span>
-                      <span className="font-mono text-[10px] font-bold">{selectedPoint.lat.toFixed(6)}</span>
-                    </div>
-                    <div className="p-3 bg-editorial-bg">
-                      <span className="block text-[8px] uppercase tracking-[0.2em] font-bold opacity-40 mb-1">Longitud</span>
-                      <span className="font-mono text-[10px] font-bold">{selectedPoint.lng.toFixed(6)}</span>
-                    </div>
-                  </div>
                 </div>
               </div>
             </div>
@@ -144,7 +131,7 @@ export default function App() {
              <MapPin size={10} /> Indice
           </div>
           <div className="flex flex-col gap-0.5 overflow-y-auto max-h-[85vh] pr-1.5 custom-scrollbar">
-            {CORDOBAZO_POINTS.sort((a, b) => a.order - b.order).map((point) => (
+            {NILO_POINTS.sort((a, b) => a.order - b.order).map((point) => (
               <button
                 key={point.id}
                 onClick={() => setSelectedPoint(point)}
@@ -201,8 +188,8 @@ export default function App() {
               onClick={e => e.stopPropagation()}
             >
               <div className="bg-editorial-text p-8 text-white">
-                <h3 className="text-2xl font-bold italic font-serif">Guía de Uso</h3>
-                <p className="text-[10px] uppercase tracking-[0.3em] opacity-50 mt-1">Archivo de la Memoria</p>
+                <h3 className="text-2xl font-bold font-display uppercase tracking-tight">Guía de Uso</h3>
+                <p className="text-[10px] uppercase tracking-[0.3em] opacity-50 mt-1">Mapa interactivo</p>
               </div>
 
               <div className="p-10 space-y-8">
@@ -220,14 +207,6 @@ export default function App() {
                     <div>
                       <h3 className="font-bold uppercase tracking-widest text-xs mb-1">Inmersión</h3>
                       <p className="text-sm opacity-70 leading-relaxed italic">Usa el botón "Exploración Inmersiva" para ver las fotos en pantalla completa y navegar entre puntos.</p>
-                    </div>
-                  </div>
-
-                  <div className="flex gap-4">
-                    <div className="w-8 h-8 rounded-full bg-brand-primary text-white flex items-center justify-center flex-shrink-0 font-bold text-sm">3</div>
-                    <div>
-                      <h3 className="font-bold uppercase tracking-widest text-xs mb-1">Edición</h3>
-                      <p className="text-sm opacity-70 leading-relaxed italic">Puedes modificar el texto "Sobre el proyecto" directamente en el archivo <span className="font-mono text-brand-primary">App.tsx</span> (línea 261 aprox).</p>
                     </div>
                   </div>
                 </div>
@@ -351,23 +330,22 @@ export default function App() {
             >
               <div className="relative h-32 md:h-48 bg-editorial-text flex items-center justify-center overflow-hidden">
                 <div className="absolute inset-0 opacity-20" style={{ backgroundImage: 'radial-gradient(white 1px, transparent 1px)', backgroundSize: '24px 24px' }} />
-                <h2 className="relative text-white text-3xl md:text-5xl font-black italic tracking-tighter font-serif uppercase">
-                  Cordobazo<span className="text-brand-primary">.1969</span>
+                <h2 className="relative text-white text-xl md:text-3xl font-black tracking-tight font-display uppercase px-6 text-center leading-tight">
+                  Lo que vuelve a mirarnos. <span className="text-brand-primary">El Cordobazo en la lente de Nilo Silvestrone</span>
                 </h2>
               </div>
               
               <div className="p-6 md:p-10 space-y-4 md:space-y-6">
                 <div className="flex flex-col gap-1">
-                  <div className="text-[9px] md:text-[10px] uppercase tracking-[0.4em] font-bold text-brand-primary">Memoria Visual</div>
-                  <div className="text-base md:text-lg font-serif italic text-editorial-text leading-relaxed">
-                    Este proyecto es un archivo inmersivo que busca reconstruir, a través de la fotografía comparativa, los escenarios del Cordobazo de 1969 en la ciudad actual.
+                  <div className="text-base md:text-lg font-serif text-editorial-text leading-relaxed">
+                    Estas fotografías no solo documentan un acontecimiento de 1969, sino que condensan una experiencia colectiva de conflicto, organización y ruptura que continúa interrogando nuestras formas actuales de vida política y social.
                   </div>
                 </div>
 
                 <div className="h-px bg-editorial-text/10" />
 
                 <p className="text-xs md:text-sm opacity-70 leading-relaxed">
-                  Una invitación a recorrer la historia caminando las calles de hoy, vinculando el presente con la gesta obrero-estudiantil que marcó a fuego la identidad de Córdoba. Cada punto en el mapa es un portal a una memoria que sigue viva bajo el asfalto.
+                  Este mapa interactivo forma parte de una muestra se exhiben fotos emblemáticas de Nilo Silvestrone, que publicaron en 1969 las revistas Siete Días y Paris Match y más de 40 fotos inéditas, cuyos negativos fueron compartidos por la familia del fotógrafo.
                 </p>
 
                 <div className="pt-2 md:pt-4 flex justify-between items-center">

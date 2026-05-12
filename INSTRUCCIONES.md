@@ -5,7 +5,7 @@ Este mapa está diseñado para ser alimentado fácilmente con tus datos de QGIS.
 ## 1. Exportación desde QGIS
 Cuando exportes tu capa de puntos desde QGIS a CSV, asegúrate de que las columnas tengan estos nombres (o cámbialos en el CSV):
 - `title`: El nombre del lugar.
-- `description`: El texto breve sobre el Cordobazo.
+- `description`: El texto breve sobre el punto de interés.
 - `lat`: La latitud (-31.xxxx).
 - `lng`: La longitud (-64.xxxx).
 - `historicalPhoto`: El nombre del archivo de la foto histórica (ej: `punto1_1969.jpg`).

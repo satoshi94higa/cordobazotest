@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Outfit:wght@100..900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Archivo:ital,wght@0,100..900;1,100..900&family=Archivo+Black&family=Outfit:wght@100..900&display=swap');
 @import "tailwindcss";
 @import "leaflet/dist/leaflet.css";
 
@@ -6,8 +6,9 @@
   --color-brand-primary: #B91C1C; /* Red 700 */
   --color-editorial-bg: #FDFBF7;
   --color-editorial-text: #1A1A1A;
-  --font-serif: "Playfair Display", serif;
+  --font-serif: "Archivo", sans-serif;
   --font-sans: "Outfit", "Inter", sans-serif;
+  --font-display: "Archivo Black", sans-serif;
 }
 
 body {

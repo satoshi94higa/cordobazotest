@@ -1,6 +1,6 @@
 import { MapContainer, TileLayer, Marker, Popup, useMap, ZoomControl, useMapEvents, Tooltip } from 'react-leaflet';
 import L from 'leaflet';
-import { CordobazoPoint } from '@/src/data';
+import { NiloPoint } from '@/src/data';
 import { useEffect } from 'react';
 
 const createCustomIcon = (order: number, isSelected: boolean) => L.divIcon({
@@ -16,8 +16,8 @@ const createCustomIcon = (order: number, isSelected: boolean) => L.divIcon({
 });
 
 interface MapProps {
-  points: CordobazoPoint[];
-  onSelectPoint: (point: CordobazoPoint | null) => void;
+  points: NiloPoint[];
+  onSelectPoint: (point: NiloPoint | null) => void;
   selectedPointId?: string | null;
 }
 
