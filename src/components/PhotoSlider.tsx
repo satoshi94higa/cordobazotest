@@ -65,144 +65,148 @@ export function PhotoSlider({
     setSliderPos(Math.max(0, Math.min(100, position)));
   };
 
-  const ViewerContent = ({ isModal = false }: { isModal?: boolean }) => (
-    <div 
-      className={cn(
-        "relative overflow-hidden flex items-center justify-center bg-black/5 group/viewer", 
-        isModal ? "w-full h-full p-2 md:p-8 bg-black" : "w-full aspect-[4/3] max-h-[350px]"
-      )}
-      onMouseDown={() => setIsDragging(true)}
-      onMouseUp={() => setIsDragging(false)}
-      onMouseLeave={() => setIsDragging(false)}
-      onMouseMove={handleMove}
-      onTouchStart={() => setIsDragging(true)}
-      onTouchEnd={() => setIsDragging(false)}
-      onTouchMove={handleMove}
-    >
-      <div className={cn("relative h-full w-full", isModal ? "flex items-center justify-center" : "")}>
-        <AnimatePresence mode="wait">
-          {viewMode === 'side-by-side' && (
-            <motion.div key="side" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="grid grid-cols-2 gap-px bg-editorial-text/10 h-full w-full">
-              <div className="relative flex items-center justify-center overflow-hidden bg-black h-full">
-                {historical ? (
+  const ViewerContent = ({ isModal = false, overrideViewMode }: { isModal?: boolean, overrideViewMode?: ViewMode }) => {
+    const currentViewMode = overrideViewMode || viewMode;
+    
+    return (
+      <div 
+        className={cn(
+          "relative overflow-hidden flex items-center justify-center bg-black/5 group/viewer", 
+          isModal ? "w-full h-full p-2 md:p-4 bg-black" : "w-full aspect-video"
+        )}
+        onMouseDown={() => setIsDragging(true)}
+        onMouseUp={() => setIsDragging(false)}
+        onMouseLeave={() => setIsDragging(false)}
+        onMouseMove={handleMove}
+        onTouchStart={() => setIsDragging(true)}
+        onTouchEnd={() => setIsDragging(false)}
+        onTouchMove={handleMove}
+      >
+        <div className={cn("relative h-full w-full", isModal ? "flex items-center justify-center" : "")}>
+          <AnimatePresence mode="wait">
+            {currentViewMode === 'side-by-side' && (
+              <motion.div key="side" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="grid grid-cols-2 gap-px bg-editorial-text/10 h-full w-full">
+                <div className="relative flex items-center justify-center overflow-hidden bg-black h-full">
+                  {historical ? (
+                    <img 
+                      src={historical} 
+                      alt="Vista 1969"
+                      className={cn(
+                        "block grayscale sepia-[0.2] object-contain w-full h-full",
+                        isModal ? "max-w-full max-h-[96vh]" : ""
+                      )} 
+                      referrerPolicy="no-referrer" 
+                    />
+                  ) : (
+                    <div className="text-white/20 text-[10px] uppercase tracking-widest font-bold text-center p-2">Foto histórica no disponible</div>
+                  )}
+                  <div className={cn(
+                    "absolute left-3 z-20 bg-black/75 backdrop-blur-md text-white text-[9px] md:text-[10px] font-bold uppercase px-2 py-1 md:px-2 md:py-0.5 tracking-[0.2em] border border-white/20 rounded shadow-xl",
+                    isModal ? "top-4 md:top-6 md:left-6" : "bottom-3 md:bottom-4 md:left-4"
+                  )}>1969</div>
+                </div>
+                <div className="relative flex items-center justify-center overflow-hidden bg-black h-full">
+                  {current ? (
+                    <img 
+                      src={current} 
+                      alt="Vista Actual" 
+                      className={cn(
+                        "block object-contain w-full h-full",
+                        isModal ? "max-w-full max-h-[96vh]" : ""
+                      )} 
+                      referrerPolicy="no-referrer" 
+                    />
+                  ) : (
+                    <div className="text-white/20 text-[10px] uppercase tracking-widest font-bold text-center p-2">Foto actual no disponible</div>
+                  )}
+                  <div className={cn(
+                    "absolute left-3 z-20 bg-brand-primary backdrop-blur-md text-white text-[9px] md:text-[10px] font-bold uppercase px-2 py-1 md:px-2 md:py-0.5 tracking-[0.2em] border border-white/20 rounded shadow-xl",
+                    isModal ? "top-4 md:top-6 md:left-6" : "bottom-3 md:bottom-4 md:left-4"
+                  )}>Hoy</div>
+                </div>
+              </motion.div>
+            )}
+
+            {currentViewMode === 'toggle' && (
+              <motion.div key="toggle" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="relative flex items-center justify-center bg-black/10 h-full w-full">
+                {(activeToggle === 'hist' ? historical : current) ? (
                   <img 
-                    src={historical} 
-                    alt="Vista 1969"
+                    src={activeToggle === 'hist' ? historical : current} 
+                    alt={activeToggle === 'hist' ? "Vista 1969" : "Vista Actual"}
                     className={cn(
-                      "block grayscale sepia-[0.2] object-contain",
-                      isModal ? "max-w-full max-h-[85vh]" : "w-full h-full"
+                      "block transition-all duration-500 object-contain w-full h-full", 
+                      activeToggle === 'hist' && "grayscale sepia-[0.2]",
+                      isModal ? "max-w-full max-h-[96vh]" : ""
                     )} 
-                    referrerPolicy="no-referrer" 
+                    referrerPolicy="no-referrer"
                   />
                 ) : (
-                  <div className="text-white/20 text-[10px] uppercase tracking-widest font-bold text-center p-2">Foto histórica no disponible</div>
+                  <div className="text-black/20 text-[10px] uppercase tracking-widest font-bold">Imagen no disponible</div>
                 )}
-                <div className={cn(
-                  "absolute left-3 z-20 bg-black/75 backdrop-blur-md text-white text-[9px] md:text-[10px] font-bold uppercase px-2 py-1.5 md:px-2.5 md:py-1 tracking-[0.2em] border border-white/20 rounded shadow-xl",
-                  isModal ? "top-16 md:top-20 md:left-6" : "bottom-3 md:bottom-4 md:left-4"
-                )}>1969</div>
-              </div>
-              <div className="relative flex items-center justify-center overflow-hidden bg-black h-full">
+              </motion.div>
+            )}
+
+            {currentViewMode === 'slider' && (
+              <motion.div 
+                key="slider"
+                initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                className="relative cursor-ew-resize overflow-hidden flex items-center justify-center h-full w-full"
+              >
                 {current ? (
                   <img 
                     src={current} 
                     alt="Vista Actual" 
                     className={cn(
-                      "block object-contain",
-                      isModal ? "max-w-full max-h-[85vh]" : "w-full h-full"
+                      "block pointer-events-none object-contain w-full h-full",
+                      isModal ? "max-w-full max-h-[96vh]" : ""
                     )} 
                     referrerPolicy="no-referrer" 
                   />
                 ) : (
-                  <div className="text-white/20 text-[10px] uppercase tracking-widest font-bold text-center p-2">Foto actual no disponible</div>
+                  <div className="text-black/20 text-[10px] uppercase tracking-widest font-bold">Vista Actual no disponible</div>
                 )}
-                <div className={cn(
-                  "absolute left-3 z-20 bg-brand-primary backdrop-blur-md text-white text-[9px] md:text-[10px] font-bold uppercase px-2 py-1.5 md:px-2.5 md:py-1 tracking-[0.2em] border border-white/20 rounded shadow-xl",
-                  isModal ? "top-16 md:top-20 md:left-6" : "bottom-3 md:bottom-4 md:left-4"
-                )}>Hoy</div>
-              </div>
-            </motion.div>
-          )}
-
-          {viewMode === 'toggle' && (
-            <motion.div key="toggle" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="relative flex items-center justify-center bg-black/10 h-full w-full">
-              {(activeToggle === 'hist' ? historical : current) ? (
-                <img 
-                  src={activeToggle === 'hist' ? historical : current} 
-                  alt={activeToggle === 'hist' ? "Vista 1969" : "Vista Actual"}
-                  className={cn(
-                    "block transition-all duration-500 object-contain", 
-                    activeToggle === 'hist' && "grayscale sepia-[0.2]",
-                    isModal ? "max-w-full max-h-[85vh]" : "w-full h-full"
-                  )} 
-                  referrerPolicy="no-referrer"
-                />
-              ) : (
-                <div className="text-black/20 text-[10px] uppercase tracking-widest font-bold">Imagen no disponible</div>
-              )}
-            </motion.div>
-          )}
-
-          {viewMode === 'slider' && (
-            <motion.div 
-              key="slider"
-              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-              className="relative cursor-ew-resize overflow-hidden flex items-center justify-center h-full w-full"
-            >
-              {current ? (
-                <img 
-                  src={current} 
-                  alt="Vista Actual" 
-                  className={cn(
-                    "block pointer-events-none object-contain",
-                    isModal ? "max-w-full max-h-[85vh]" : "w-full h-full"
-                  )} 
-                  referrerPolicy="no-referrer" 
-                />
-              ) : (
-                <div className="text-black/20 text-[10px] uppercase tracking-widest font-bold">Vista Actual no disponible</div>
-              )}
-              
-              {historical && current && (
-                <>
-                  <div 
-                    className="absolute inset-y-0 left-0 overflow-hidden pointer-events-none flex items-center h-full" 
-                    style={{ width: `${sliderPos}%` }}
-                  >
-                    <img 
-                      src={historical} 
-                      alt="Vista 1969" 
-                      className={cn(
-                        "max-none grayscale sepia-[0.2] h-full object-cover",
-                        isModal ? "max-h-[85vh]" : ""
-                      )} 
-                      style={{ 
-                        width: `${100 / (sliderPos / 100)}%`,
-                      }} 
-                      referrerPolicy="no-referrer" 
-                    />
-                  </div>
-                  <div className={cn(
-                    "absolute left-4 bg-black/70 backdrop-blur-md text-white text-[9px] font-bold uppercase px-2.5 py-1.5 tracking-[0.2em] border border-white/20 rounded shadow-xl pointer-events-none z-30",
-                    isModal ? "top-16" : "bottom-4"
-                  )}>1969</div>
-                  <div className={cn(
-                    "absolute right-4 bg-brand-primary backdrop-blur-md text-white text-[9px] font-bold uppercase px-2.5 py-1.5 tracking-[0.2em] border border-white/20 rounded shadow-xl pointer-events-none z-30",
-                    isModal ? "top-16" : "bottom-4"
-                  )}>Hoy</div>
-                  <div className="absolute inset-y-0 w-0.5 bg-white shadow-[0_0_10px_rgba(0,0,0,0.5)] pointer-events-none" style={{ left: `${sliderPos}%` }}>
-                    <div className="absolute top-1/2 -translate-x-1/2 -translate-y-1/2 w-8 h-8 md:w-10 md:h-10 bg-white rounded-full shadow-2xl flex items-center justify-center border-2 md:border-4 border-brand-primary">
-                      <ArrowLeftRight size={14} className="text-brand-primary" />
+                
+                {historical && current && (
+                  <>
+                    <div 
+                      className="absolute inset-y-0 left-0 overflow-hidden pointer-events-none flex items-center h-full" 
+                      style={{ width: `${sliderPos}%` }}
+                    >
+                      <img 
+                        src={historical} 
+                        alt="Vista 1969" 
+                        className={cn(
+                          "max-none grayscale sepia-[0.2] h-full object-contain",
+                          isModal ? "max-h-[96vh]" : ""
+                        )} 
+                        style={{ 
+                          width: `${100 / (sliderPos / 100)}%`,
+                        }} 
+                        referrerPolicy="no-referrer" 
+                      />
                     </div>
-                  </div>
-                </>
-              )}
-            </motion.div>
-          )}
-        </AnimatePresence>
+                    <div className={cn(
+                      "absolute left-4 bg-black/70 backdrop-blur-md text-white text-[9px] font-bold uppercase px-2 py-1 tracking-[0.2em] border border-white/20 rounded shadow-xl pointer-events-none z-30",
+                      isModal ? "top-4" : "bottom-4"
+                    )}>1969</div>
+                    <div className={cn(
+                      "absolute right-4 bg-brand-primary backdrop-blur-md text-white text-[9px] font-bold uppercase px-2 py-1 tracking-[0.2em] border border-white/20 rounded shadow-xl pointer-events-none z-30",
+                      isModal ? "top-4" : "bottom-4"
+                    )}>Hoy</div>
+                    <div className="absolute inset-y-0 w-0.5 bg-white shadow-[0_0_10px_rgba(0,0,0,0.5)] pointer-events-none" style={{ left: `${sliderPos}%` }}>
+                      <div className="absolute top-1/2 -translate-x-1/2 -translate-y-1/2 w-6 h-6 md:w-8 md:h-8 bg-white rounded-full shadow-2xl flex items-center justify-center border-2 border-brand-primary">
+                        <ArrowLeftRight size={12} className="text-brand-primary" />
+                      </div>
+                    </div>
+                  </>
+                )}
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
       </div>
-    </div>
-  );
+    );
+  };;
 
   const ModeSelector = ({ isModal = false }: { isModal?: boolean }) => (
     <div className={cn(
@@ -212,40 +216,40 @@ export function PhotoSlider({
         : "bg-white border-editorial-text/10 shadow-sm"
     )}>
       <button 
-        onClick={() => setViewMode('side-by-side')}
+        onClick={(e) => { e.stopPropagation(); setViewMode('side-by-side'); }}
         className={cn(
-          "px-4 h-10 rounded-full flex items-center justify-center gap-2 transition-all",
+          "px-3 h-8 rounded-full flex items-center justify-center gap-1.5 transition-all outline-none",
           viewMode === 'side-by-side' 
             ? "bg-brand-primary text-white shadow-lg" 
             : isModal ? "text-white/40 hover:text-white" : "text-editorial-text/40 hover:text-editorial-text hover:bg-black/5"
         )}
       >
-        <Columns size={16} />
-        <span className="text-[9px] font-bold uppercase tracking-widest">Lados</span>
+        <Columns size={12} />
+        <span className="text-[8px] font-bold uppercase tracking-widest">Lados</span>
       </button>
       <button 
-        onClick={() => setViewMode('toggle')}
+        onClick={(e) => { e.stopPropagation(); setViewMode('toggle'); }}
         className={cn(
-          "px-4 h-10 rounded-full flex items-center justify-center gap-2 transition-all",
+          "px-3 h-8 rounded-full flex items-center justify-center gap-1.5 transition-all outline-none",
           viewMode === 'toggle' 
             ? "bg-brand-primary text-white shadow-lg" 
             : isModal ? "text-white/40 hover:text-white" : "text-editorial-text/40 hover:text-editorial-text hover:bg-black/5"
         )}
       >
-        <Layers size={16} />
-        <span className="text-[9px] font-bold uppercase tracking-widest">Alternar</span>
+        <Layers size={12} />
+        <span className="text-[8px] font-bold uppercase tracking-widest">Alternar</span>
       </button>
       <button 
-        onClick={() => setViewMode('slider')}
+        onClick={(e) => { e.stopPropagation(); setViewMode('slider'); }}
         className={cn(
-          "px-4 h-10 rounded-full flex items-center justify-center gap-2 transition-all",
+          "px-3 h-8 rounded-full flex items-center justify-center gap-1.5 transition-all outline-none",
           viewMode === 'slider' 
             ? "bg-brand-primary text-white shadow-lg" 
             : isModal ? "text-white/40 hover:text-white" : "text-editorial-text/40 hover:text-editorial-text hover:bg-black/5"
         )}
       >
-        <ArrowLeftRight size={16} />
-        <span className="text-[9px] font-bold uppercase tracking-widest">Deslizar</span>
+        <ArrowLeftRight size={12} />
+        <span className="text-[8px] font-bold uppercase tracking-widest">Deslizar</span>
       </button>
     </div>
   );
@@ -258,18 +262,18 @@ export function PhotoSlider({
         : "bg-white border-editorial-text/10 shadow-sm"
     )}>
       <button 
-        onClick={() => setActiveToggle('hist')}
+        onClick={(e) => { e.stopPropagation(); setActiveToggle('hist'); }}
         className={cn(
-          "px-6 py-2 rounded-full font-bold text-[10px] uppercase tracking-widest transition-all", 
+          "px-5 py-1.5 rounded-full font-bold text-[9px] uppercase tracking-widest transition-all outline-none", 
           activeToggle === 'hist' ? "bg-brand-primary text-white shadow-md" : isModal ? "text-white/40 hover:text-white" : "text-editorial-text/40 hover:text-editorial-text hover:bg-black/5"
         )}
       >
         1969
       </button>
       <button 
-        onClick={() => setActiveToggle('curr')}
+        onClick={(e) => { e.stopPropagation(); setActiveToggle('curr'); }}
         className={cn(
-          "px-6 py-2 rounded-full font-bold text-[10px] uppercase tracking-widest transition-all", 
+          "px-5 py-1.5 rounded-full font-bold text-[9px] uppercase tracking-widest transition-all outline-none", 
           activeToggle === 'curr' ? "bg-brand-primary text-white shadow-md" : isModal ? "text-white/40 hover:text-white" : "text-editorial-text/40 hover:text-editorial-text hover:bg-black/5"
         )}
       >
@@ -305,30 +309,29 @@ export function PhotoSlider({
   };
 
   return (
-    <div className={cn("flex flex-col gap-4", className)}>
-      <div className="flex justify-center -mb-1">
-        <ModeSelector />
+    <div className={cn("flex flex-col gap-3", className)}>
+      <ViewerContent overrideViewMode="side-by-side" />
+
+      <div className="space-y-2 px-1">
+        <h2 className="text-[10px] font-bold tracking-tight font-display uppercase leading-tight text-editorial-text">
+          {title}
+        </h2>
+        <div className="h-0.5 w-6 bg-brand-primary" />
+        <p className="text-[8px] leading-relaxed text-editorial-text font-serif italic opacity-70 line-clamp-2">
+          {description}
+        </p>
       </div>
-      
-      <ViewerContent />
 
-      {viewMode === 'toggle' && (
-        <div className="flex justify-center -mt-1">
-          <ToggleSelector />
-        </div>
-      )}
-
-      <MiniMap />
-
-      <div className="px-1 mt-1 flex gap-2">
+      <div className="px-0.5 mt-1 flex flex-col gap-2">
         <button 
           onClick={() => setIsFullSize(true)}
-          className="flex-1 h-12 bg-brand-primary text-white rounded-xl flex items-center justify-center gap-2.5 shadow-lg hover:bg-brand-primary/90 transition-all active:scale-[0.98] group"
+          className="w-full h-9 bg-brand-primary text-white rounded-lg flex items-center justify-center gap-2 shadow-lg hover:bg-brand-primary/90 transition-all active:scale-[0.98] group"
         >
-          <Maximize2 size={16} className="opacity-80 group-hover:scale-110 transition-transform" />
-          <span className="text-[9px] uppercase font-bold tracking-[0.3em]">Exploración Inmersiva</span>
+          <Maximize2 size={13} className="opacity-80 group-hover:scale-110 transition-transform" />
+          <span className="text-[7px] uppercase font-bold tracking-[0.3em]">Exploración Inmersiva</span>
         </button>
       </div>
+
 
       {/* Fullscreen Overlay */}
       {createPortal(
@@ -364,45 +367,45 @@ export function PhotoSlider({
                 </div>
 
                 {/* Minimalist Mobile Overlay (Info + Nav) */}
-                <div className="md:hidden absolute bottom-0 left-0 right-0 z-50 flex flex-col pb-6 px-4 pointer-events-none landscape:flex-row landscape:items-end landscape:gap-4 landscape:pb-4">
+                <div className="md:hidden absolute bottom-4 left-0 right-0 z-50 flex flex-col pb-8 px-4 pointer-events-none landscape:flex-row landscape:items-end landscape:gap-4 landscape:pb-4">
                   {/* Subtle Text Overlay */}
-                  <div className="bg-black/40 backdrop-blur-md p-4 mb-4 rounded-2xl border border-white/10 pointer-events-auto landscape:mb-0 landscape:flex-1 landscape:max-w-[300px]">
-                    <div className="text-[8px] uppercase tracking-[0.4em] font-bold text-brand-primary mb-1">Mapa interactivo</div>
-                    <h2 className="text-sm font-bold tracking-tight text-white line-clamp-1 mb-0.5 font-display uppercase">{title}</h2>
-                    <p className="text-[10px] text-white/60 font-serif line-clamp-2 landscape:line-clamp-1">{description}</p>
+                  <div className="bg-black/60 backdrop-blur-md p-3 mb-4 rounded-xl border border-white/10 pointer-events-auto landscape:mb-0 landscape:flex-1 landscape:max-w-[260px]">
+                    <div className="text-[7px] uppercase tracking-[0.4em] font-bold text-brand-primary mb-1">Mapa interactivo</div>
+                    <h2 className="text-xs font-bold tracking-tight text-white line-clamp-1 mb-0.5 font-display uppercase">{title}</h2>
+                    <p className="text-[9px] text-white/50 font-serif line-clamp-2 landscape:line-clamp-1">{description}</p>
                   </div>
 
-                  <div className="flex flex-col gap-4 pointer-events-auto landscape:flex-1">
+                  <div className="flex flex-col gap-3 pointer-events-auto landscape:flex-1">
                     {/* Toggle Selector for Mobile - if in toggle mode */}
                     {viewMode === 'toggle' && (
-                      <div className="flex justify-center landscape:scale-90">
+                      <div className="flex justify-center landscape:scale-80">
                         <ToggleSelector isModal />
                       </div>
                     )}
 
                     {/* Minimalist Navigation Overlay */}
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-3">
                       <button 
                         onClick={onPrev}
                         disabled={!hasPrev}
                         className={cn(
-                          "flex-1 h-12 rounded-xl flex items-center justify-center gap-2 font-bold text-[9px] uppercase tracking-[0.2em] transition-all bg-black/40 backdrop-blur-md border border-white/10 text-white shadow-xl landscape:h-10",
+                          "flex-1 h-14 rounded-xl flex items-center justify-center gap-2 font-bold text-[8px] uppercase tracking-[0.2em] transition-all bg-black/60 backdrop-blur-md border border-white/10 text-white shadow-xl active:scale-95",
                           !hasPrev && "opacity-20 cursor-not-allowed"
                         )}
                       >
                         <ArrowLeftRight size={14} className="rotate-180" />
-                        Prev
+                        Anterior
                       </button>
                       
                       <button 
                         onClick={onNext}
                         disabled={!hasNext}
                         className={cn(
-                          "flex-1 h-12 rounded-xl flex items-center justify-center gap-2 font-bold text-[9px] uppercase tracking-[0.2em] transition-all bg-white text-black shadow-xl landscape:h-10",
+                          "flex-1 h-14 rounded-xl flex items-center justify-center gap-2 font-bold text-[8px] uppercase tracking-[0.2em] transition-all bg-white text-black shadow-xl active:scale-95",
                           !hasNext && "opacity-20 cursor-not-allowed"
                         )}
                       >
-                        Sig
+                        Siguiente
                         <ArrowLeftRight size={14} />
                       </button>
                     </div>
@@ -432,21 +435,21 @@ export function PhotoSlider({
                   <X size={20} />
                 </button>
 
-                <div className="flex-1 overflow-y-auto p-8 md:p-10 custom-scrollbar landscape:p-6 landscape:pt-12">
-                  <div className="flex flex-col gap-1 mb-6 landscape:mb-4">
-                    <div className="text-[10px] uppercase tracking-[0.4em] font-bold text-brand-primary">Info Inmersiva</div>
-                    <div className="text-xs opacity-40 font-mono uppercase tracking-widest leading-none mt-2">Mapa interactivo</div>
+                <div className="flex-1 overflow-y-auto p-6 md:p-8 custom-scrollbar landscape:p-4 landscape:pt-10">
+                  <div className="flex flex-col gap-1 mb-4 landscape:mb-3">
+                    <div className="text-[8px] uppercase tracking-[0.4em] font-bold text-brand-primary">Info Inmersiva</div>
+                    <div className="text-[9px] opacity-40 font-mono uppercase tracking-widest leading-none mt-1">Mapa interactivo</div>
                   </div>
 
-                  <div className="space-y-6 landscape:space-y-4">
+                  <div className="space-y-4 landscape:space-y-3">
                     <div>
-                      <h2 className="text-2xl md:text-3xl font-bold tracking-tight mb-3 font-display uppercase leading-tight text-editorial-text landscape:text-xl">
+                      <h2 className="text-xl md:text-2xl font-bold tracking-tight mb-2 font-display uppercase leading-tight text-editorial-text landscape:text-lg">
                         {title}
                       </h2>
-                      <div className="h-1.5 w-16 bg-brand-primary" />
+                      <div className="h-1 w-12 bg-brand-primary" />
                     </div>
 
-                    <p className="text-base md:text-lg leading-relaxed text-editorial-text font-serif opacity-90 landscape:text-sm">
+                    <p className="text-sm md:text-base leading-relaxed text-editorial-text font-serif opacity-90 landscape:text-xs">
                       {description}
                     </p>
 
@@ -464,43 +467,43 @@ export function PhotoSlider({
                 </div>
 
                 {/* Highly accessible Navigation and Close Buttons for Touch Screens */}
-                <div className="p-6 md:p-10 border-t border-editorial-text/10 bg-editorial-bg/50 backdrop-blur-md space-y-4 landscape:p-4 landscape:space-y-2">
+                <div className="p-4 md:p-6 border-t border-editorial-text/10 bg-editorial-bg/50 backdrop-blur-md space-y-3 landscape:p-3 landscape:space-y-2">
                   {/* Navigation Row */}
-                  <div className="grid grid-cols-2 gap-4 pb-2 landscape:pb-0 landscape:gap-2">
+                  <div className="grid grid-cols-2 gap-3 pb-1 landscape:pb-0 landscape:gap-2">
                     <button 
                       onClick={onPrev}
                       disabled={!hasPrev}
                       className={cn(
-                        "h-14 rounded-xl flex items-center justify-center gap-3 font-bold text-[10px] uppercase tracking-widest border transition-all",
+                        "h-12 rounded-xl flex items-center justify-center gap-2 font-bold text-[9px] uppercase tracking-widest border transition-all",
                         hasPrev 
                           ? "bg-white text-editorial-text border-editorial-text/10 shadow-lg hover:bg-gray-50 active:scale-95" 
                           : "opacity-20 cursor-not-allowed bg-black/5"
                       )}
                     >
-                      <ArrowLeftRight size={16} className="rotate-180 opacity-40" />
+                      <ArrowLeftRight size={14} className="rotate-180 opacity-40" />
                       Anterior
                     </button>
                     <button 
                       onClick={onNext}
                       disabled={!hasNext}
                       className={cn(
-                        "h-14 rounded-xl flex items-center justify-center gap-3 font-bold text-[10px] uppercase tracking-widest border transition-all",
+                        "h-12 rounded-xl flex items-center justify-center gap-2 font-bold text-[9px] uppercase tracking-widest border transition-all",
                         hasNext 
                           ? "bg-white text-editorial-text border-editorial-text/10 shadow-lg hover:bg-gray-50 active:scale-95" 
                           : "opacity-20 cursor-not-allowed bg-black/5"
                       )}
                     >
                       Siguiente
-                      <ArrowLeftRight size={16} className="opacity-40" />
+                      <ArrowLeftRight size={14} className="opacity-40" />
                     </button>
                   </div>
                   
                   <button 
                     onClick={() => setIsFullSize(false)}
-                    className="w-full h-14 bg-brand-primary text-white rounded-xl flex items-center justify-center gap-3 shadow-lg hover:bg-editorial-text transition-all active:scale-95 group"
+                    className="w-full h-12 bg-brand-primary text-white rounded-xl flex items-center justify-center gap-3 shadow-lg hover:bg-editorial-text transition-all active:scale-95 group"
                   >
-                    <LocateFixed size={16} />
-                    <span className="text-[10px] uppercase font-bold tracking-[0.3em]">Volver al Mapa</span>
+                    <LocateFixed size={14} />
+                    <span className="text-[9px] uppercase font-bold tracking-[0.3em]">Volver al Mapa</span>
                   </button>
                 </div>
               </div>

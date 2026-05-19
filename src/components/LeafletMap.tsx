@@ -2,6 +2,8 @@ import { MapContainer, TileLayer, Marker, Popup, useMap, ZoomControl, useMapEven
 import L from 'leaflet';
 import { NiloPoint } from '@/src/data';
 import { useEffect } from 'react';
+import { PhotoSlider } from './PhotoSlider';
+import { X } from 'lucide-react';
 
 const createCustomIcon = (order: number, isSelected: boolean) => L.divIcon({
   className: 'custom-marker',
@@ -18,7 +20,12 @@ const createCustomIcon = (order: number, isSelected: boolean) => L.divIcon({
 interface MapProps {
   points: NiloPoint[];
   onSelectPoint: (point: NiloPoint | null) => void;
+  selectedPoint?: NiloPoint | null;
   selectedPointId?: string | null;
+  onNext?: () => void;
+  onPrev?: () => void;
+  hasNext?: boolean;
+  hasPrev?: boolean;
 }
 
 function ChangeView({ center, zoom }: { center: [number, number]; zoom: number }) {
@@ -38,20 +45,29 @@ function MapEvents({ onMapClick }: { onMapClick: () => void }) {
   return null;
 }
 
-export function LeafletMap({ points, onSelectPoint, selectedPointId }: MapProps) {
-  const cordobaCenter: [number, number] = [-31.4167, -64.1833];
+export function LeafletMap({ 
+  points, 
+  onSelectPoint, 
+  selectedPoint,
+  selectedPointId,
+  onNext,
+  onPrev,
+  hasNext,
+  hasPrev
+}: MapProps) {
+  const cordobaCenter: [number, number] = [-31.4167, -64.186];
 
   // Límites aproximados de la Ciudad de Córdoba para restringir el movimiento
   const cordobaBounds: L.LatLngBoundsExpression = [
-    [-31.52, -64.30], // Suroeste
-    [-31.32, -64.05], // Noreste
+    [-31.55, -64.35], // Suroeste - Ampliado un poco
+    [-31.30, -64.05], // Noreste
   ];
 
   return (
     <MapContainer 
       center={cordobaCenter} 
       zoom={14} 
-      minZoom={13} 
+      minZoom={12} 
       maxZoom={18}
       maxBounds={cordobaBounds}
       maxBoundsViscosity={1.0}
@@ -85,14 +101,62 @@ export function LeafletMap({ points, onSelectPoint, selectedPointId }: MapProps)
         </Marker>
       ))}
 
-      {/* Recenter when a point is selected */}
+      {/* Georeferenced Editorial Balloon Popup */}
+      {selectedPoint && (
+        <Popup 
+          position={[selectedPoint.lat, selectedPoint.lng]}
+          closeButton={false}
+          autoPan={true}
+          autoPanPadding={[50, 50]}
+          className="editorial-popup"
+          offset={[0, -20]}
+          maxWidth={500}
+        >
+          <div className="bg-editorial-bg shadow-2xl rounded-2xl overflow-hidden border border-editorial-text/10 flex flex-col w-[380px] md:w-[480px]">
+            <div className="p-2 border-b border-editorial-text/5 flex justify-between items-center bg-editorial-text text-white">
+              <div className="flex items-center gap-2">
+                <div className="w-1.5 h-1.5 bg-brand-primary rounded-full animate-pulse" />
+                <h3 className="text-[8px] font-bold uppercase tracking-widest truncate max-w-[180px]">{selectedPoint.title}</h3>
+              </div>
+              <button 
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onSelectPoint(null);
+                }}
+                className="w-6 h-6 hover:bg-white/10 rounded-full flex items-center justify-center transition-colors"
+                title="Cerrar"
+              >
+                <X size={14} />
+              </button>
+            </div>
+
+            <div className="p-3" onClick={(e) => e.stopPropagation()}>
+              <PhotoSlider 
+                historical={selectedPoint.historicalPhoto}
+                current={selectedPoint.currentPhoto}
+                title={selectedPoint.title}
+                description={selectedPoint.description}
+                lat={selectedPoint.lat}
+                lng={selectedPoint.lng}
+                onNext={onNext || (() => {})}
+                onPrev={onPrev || (() => {})}
+                hasNext={hasNext || false}
+                hasPrev={hasPrev || false}
+                className="shadow-lg rounded-lg overflow-hidden"
+              />
+            </div>
+          </div>
+        </Popup>
+      )}
+
+      {/* Recenter when a point is selected - offset to center the popup */}
       {selectedPointId && points.find(p => p.id === selectedPointId) && (
         <ChangeView 
           center={[
-            points.find(p => p.id === selectedPointId)!.lat, 
+            points.find(p => p.id === selectedPointId)!.lat + 0.0007, 
             points.find(p => p.id === selectedPointId)!.lng
           ]} 
-          zoom={16} 
+          zoom={17} 
         />
       )}
     </MapContainer>
