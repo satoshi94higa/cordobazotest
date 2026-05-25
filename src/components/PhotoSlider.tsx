@@ -34,7 +34,7 @@ interface PhotoSliderProps {
   className?: string;
 }
 
-type ViewMode = 'slider' | 'side-by-side' | 'toggle';
+type ViewMode = 'side-by-side' | 'toggle';
 
 export function PhotoSlider({ 
   historical, 
@@ -50,20 +50,9 @@ export function PhotoSlider({
   className 
 }: PhotoSliderProps) {
   const [viewMode, setViewMode] = useState<ViewMode>('side-by-side');
-  const [sliderPos, setSliderPos] = useState(50);
-  const [isDragging, setIsDragging] = useState(false);
   const [activeToggle, setActiveToggle] = useState<'hist' | 'curr'>('hist');
   const [isFullSize, setIsFullSize] = useState(false);
   const [showMobileSidebar, setShowMobileSidebar] = useState(false);
-
-  const handleMove = (e: ReactMouseEvent | ReactTouchEvent) => {
-    if (!isDragging || viewMode !== 'slider') return;
-    
-    const container = e.currentTarget.getBoundingClientRect();
-    const x = 'touches' in e ? e.touches[0].clientX : (e as ReactMouseEvent).clientX;
-    const position = ((x - container.left) / container.width) * 100;
-    setSliderPos(Math.max(0, Math.min(100, position)));
-  };
 
   const ViewerContent = ({ isModal = false, overrideViewMode }: { isModal?: boolean, overrideViewMode?: ViewMode }) => {
     const currentViewMode = overrideViewMode || viewMode;
@@ -74,13 +63,6 @@ export function PhotoSlider({
           "relative overflow-hidden flex items-center justify-center bg-black/5 group/viewer", 
           isModal ? "w-full h-full p-2 md:p-4 bg-black" : "w-full aspect-video"
         )}
-        onMouseDown={() => setIsDragging(true)}
-        onMouseUp={() => setIsDragging(false)}
-        onMouseLeave={() => setIsDragging(false)}
-        onMouseMove={handleMove}
-        onTouchStart={() => setIsDragging(true)}
-        onTouchEnd={() => setIsDragging(false)}
-        onTouchMove={handleMove}
       >
         <div className={cn("relative h-full w-full", isModal ? "flex items-center justify-center" : "")}>
           <AnimatePresence mode="wait">
@@ -145,63 +127,6 @@ export function PhotoSlider({
                 )}
               </motion.div>
             )}
-
-            {currentViewMode === 'slider' && (
-              <motion.div 
-                key="slider"
-                initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                className="relative cursor-ew-resize overflow-hidden flex items-center justify-center h-full w-full"
-              >
-                {current ? (
-                  <img 
-                    src={current} 
-                    alt="Vista Actual" 
-                    className={cn(
-                      "block pointer-events-none object-contain w-full h-full",
-                      isModal ? "max-w-full max-h-[96vh]" : ""
-                    )} 
-                    referrerPolicy="no-referrer" 
-                  />
-                ) : (
-                  <div className="text-black/20 text-[10px] uppercase tracking-widest font-bold">Vista Actual no disponible</div>
-                )}
-                
-                {historical && current && (
-                  <>
-                    <div 
-                      className="absolute inset-y-0 left-0 overflow-hidden pointer-events-none flex items-center h-full" 
-                      style={{ width: `${sliderPos}%` }}
-                    >
-                      <img 
-                        src={historical} 
-                        alt="Vista 1969" 
-                        className={cn(
-                          "max-none grayscale sepia-[0.2] h-full object-contain",
-                          isModal ? "max-h-[96vh]" : ""
-                        )} 
-                        style={{ 
-                          width: `${100 / (sliderPos / 100)}%`,
-                        }} 
-                        referrerPolicy="no-referrer" 
-                      />
-                    </div>
-                    <div className={cn(
-                      "absolute left-4 bg-black/70 backdrop-blur-md text-white text-[9px] font-bold uppercase px-2 py-1 tracking-[0.2em] border border-white/20 rounded shadow-xl pointer-events-none z-30",
-                      isModal ? "top-4" : "bottom-4"
-                    )}>1969</div>
-                    <div className={cn(
-                      "absolute right-4 bg-brand-primary backdrop-blur-md text-white text-[9px] font-bold uppercase px-2 py-1 tracking-[0.2em] border border-white/20 rounded shadow-xl pointer-events-none z-30",
-                      isModal ? "top-4" : "bottom-4"
-                    )}>Hoy</div>
-                    <div className="absolute inset-y-0 w-0.5 bg-white shadow-[0_0_10px_rgba(0,0,0,0.5)] pointer-events-none" style={{ left: `${sliderPos}%` }}>
-                      <div className="absolute top-1/2 -translate-x-1/2 -translate-y-1/2 w-6 h-6 md:w-8 md:h-8 bg-white rounded-full shadow-2xl flex items-center justify-center border-2 border-brand-primary">
-                        <ArrowLeftRight size={12} className="text-brand-primary" />
-                      </div>
-                    </div>
-                  </>
-                )}
-              </motion.div>
-            )}
           </AnimatePresence>
         </div>
       </div>
@@ -238,18 +163,6 @@ export function PhotoSlider({
       >
         <Layers size={12} />
         <span className="text-[8px] font-bold uppercase tracking-widest">Alternar</span>
-      </button>
-      <button 
-        onClick={(e) => { e.stopPropagation(); setViewMode('slider'); }}
-        className={cn(
-          "px-3 h-8 rounded-full flex items-center justify-center gap-1.5 transition-all outline-none",
-          viewMode === 'slider' 
-            ? "bg-brand-primary text-white shadow-lg" 
-            : isModal ? "text-white/40 hover:text-white" : "text-editorial-text/40 hover:text-editorial-text hover:bg-black/5"
-        )}
-      >
-        <ArrowLeftRight size={12} />
-        <span className="text-[8px] font-bold uppercase tracking-widest">Deslizar</span>
       </button>
     </div>
   );

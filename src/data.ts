@@ -24,7 +24,7 @@ export const NILO_POINTS: NiloPoint[] = [
     "lat": -31.42042516618635,
     "lng": -64.18905719044096,
     "historicalPhoto": "fotos/AS-137.jpg",
-    "currentPhoto": "fotos/_A742756.jpg"
+    "currentPhoto": "fotos/"
   },
   {
     "id": "2",
@@ -34,7 +34,7 @@ export const NILO_POINTS: NiloPoint[] = [
     "lat": -31.42180272405577,
     "lng": -64.18950658733263,
     "historicalPhoto": "fotos/AS-090.jpg",
-    "currentPhoto": "fotos/_A742764.jpg"
+    "currentPhoto": "fotos/"
   },
   {
     "id": "3",
@@ -44,7 +44,7 @@ export const NILO_POINTS: NiloPoint[] = [
     "lat": -31.419970255551757,
     "lng": -64.18983391955626,
     "historicalPhoto": "fotos/AS-185.jpg",
-    "currentPhoto": "fotos/_A742760.jpg"
+    "currentPhoto": "fotos/"
   },
   {
     "id": "4",
@@ -54,7 +54,7 @@ export const NILO_POINTS: NiloPoint[] = [
     "lat": -31.42069510460032,
     "lng": -64.18748357313221,
     "historicalPhoto": "fotos/AS-048.jpg",
-    "currentPhoto": "fotos/_A742749.jpg"
+    "currentPhoto": "fotos/"
   },
   {
     "id": "5",
@@ -64,7 +64,7 @@ export const NILO_POINTS: NiloPoint[] = [
     "lat": -31.42038784493884,
     "lng": -64.18738374049549,
     "historicalPhoto": "fotos/AS-047.jpg",
-    "currentPhoto": "fotos/_A742741.jpg"
+    "currentPhoto": "fotos/"
   },
   {
     "id": "6",
@@ -74,7 +74,7 @@ export const NILO_POINTS: NiloPoint[] = [
     "lat": -31.47264414268566,
     "lng": -64.23916501396913,
     "historicalPhoto": "fotos/AS-095.jpg",
-    "currentPhoto": "fotos/_A742772.jpg"
+    "currentPhoto": "fotos/"
   },
   {
     "id": "7",
