@@ -1,9 +1,9 @@
 import { MapContainer, TileLayer, Marker, Popup, useMap, ZoomControl, useMapEvents, Tooltip } from 'react-leaflet';
 import L from 'leaflet';
 import { NiloPoint } from '@/src/data';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { PhotoSlider } from './PhotoSlider';
-import { X, AlertTriangle, RefreshCw } from 'lucide-react';
+import { X } from 'lucide-react';
 
 // Crucial fix for older Android TV WebViews: 
 // Force Leaflet to use standard 2D translation (translate) instead of CSS 3D translate3d, 
@@ -71,10 +71,8 @@ export function LeafletMap({
   onPrev,
   hasNext,
   hasPrev
-}: MapProps) {
+ }: MapProps) {
   const cordobaCenter: [number, number] = [-31.4167, -64.186];
-  const [tileError, setTileError] = useState(false);
-  const [showTroubleshoot, setShowTroubleshoot] = useState(false);
 
   // Límites aproximados de la Ciudad de Córdoba para restringir el movimiento
   const cordobaBounds: L.LatLngBoundsExpression = [
@@ -82,59 +80,8 @@ export function LeafletMap({
     [-31.30, -64.05], // Noreste
   ];
 
-  // Auto-display troubleshooting banner if tile loading fails or loads extremely slowly
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      // In kiosk WebViews, if tiles haven't appeared or if CORS acts up, let's allow showing a manual diagnostic helper
-      setShowTroubleshoot(true);
-    }, 4000);
-    return () => clearTimeout(timer);
-  }, []);
-
   return (
     <div className="absolute inset-0 w-full h-full z-0 overflow-hidden">
-      {/* Troubleshooting and Diagnostic Banner for Android TV WebViews */}
-      {showTroubleshoot && (
-        <div className="absolute top-24 left-1/2 -translate-x-1/2 z-[2000] w-[90%] max-w-xl bg-amber-50 border-l-4 border-amber-600 p-4 shadow-xl rounded-r-lg animate-fade-in pointer-events-auto">
-          <div className="flex gap-3">
-            <AlertTriangle className="text-amber-600 flex-shrink-0" size={20} />
-            <div className="flex-1">
-              <h4 className="text-xs font-black uppercase text-amber-900 tracking-wider">Asistencia de Visualización (Modo TV / Kiosco)</h4>
-              <p className="text-[10px] text-amber-800 leading-normal mt-1">
-                ¿El mapa se ve gris u opaco? Los Smart TV de Android suelen desconfigurar su <strong>fecha y hora</strong> al reiniciarse. Si la hora no es correcta, la TV bloquea por seguridad (SSL) los mapas. Verifique que:
-              </p>
-              <ul className="list-disc list-inside text-[9px] text-amber-700 space-y-0.5 mt-1.5 font-mono">
-                <li>La fecha y hora del sistema de la TV sean las actuales de hoy.</li>
-                <li>La TV tenga conexión estable a internet para cargar el mapa.</li>
-              </ul>
-              <div className="flex gap-2 mt-3">
-                <button 
-                  onClick={() => {
-                    setTileError(false);
-                    window.location.reload();
-                  }}
-                  className="px-2.5 py-1 bg-amber-600 text-white rounded text-[9px] font-bold uppercase tracking-wider hover:bg-amber-700 flex items-center gap-1 cursor-pointer transition-colors"
-                >
-                  <RefreshCw size={10} /> Recargar todo
-                </button>
-                <button 
-                  onClick={() => setShowTroubleshoot(false)}
-                  className="px-2 py-1 bg-amber-100 hover:bg-amber-200 text-amber-800 rounded text-[9px] font-bold uppercase cursor-pointer transition-colors"
-                >
-                  Entendido
-                </button>
-              </div>
-            </div>
-            <button 
-              onClick={() => setShowTroubleshoot(false)}
-              className="text-amber-600 hover:text-amber-900 text-[10px]"
-            >
-              <X size={16} />
-            </button>
-          </div>
-        </div>
-      )}
-
       <MapContainer 
         center={cordobaCenter} 
         zoom={14} 
@@ -159,13 +106,6 @@ export function LeafletMap({
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-          eventHandlers={{
-            tileerror: (error) => {
-              console.error("Tile layer failed loading tiles:", error);
-              setTileError(true);
-              setShowTroubleshoot(true);
-            }
-          }}
         />
         <ZoomControl position="bottomright" />
         
