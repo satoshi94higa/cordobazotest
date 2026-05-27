@@ -143,6 +143,7 @@ export function LeafletMap({
                 hasNext={hasNext || false}
                 hasPrev={hasPrev || false}
                 className="shadow-lg rounded-lg overflow-hidden"
+                isPopup={true}
               />
             </div>
           </div>
