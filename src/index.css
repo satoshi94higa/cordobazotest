@@ -41,6 +41,40 @@ body {
   font-family: var(--font-sans);
   background-color: var(--color-editorial-bg);
   color: var(--color-editorial-text);
+  
+  /* Critical Kiosk & Touchscreen Safeguards */
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none; /* Prevent users from highlighting text/images */
+  
+  -webkit-user-drag: none; /* Prevent dragging elements physically */
+  
+  -webkit-tap-highlight-color: transparent; /* Remove blue highlight flash on touch */
+}
+
+/* Ensure images don't display drag previews when held down on touchscreen */
+img {
+  -webkit-user-drag: none !important;
+  user-drag: none !important;
+  -webkit-user-select: none !important;
+  user-select: none !important;
+  pointer-events: none; /* Avoid native drag mechanics on historical/current elements */
+}
+
+/* Re-allow map markers and buttons to be clicked */
+.leaflet-marker-icon, .leaflet-interactive, button, a {
+  pointer-events: auto !important;
+  cursor: pointer;
+}
+
+/* Raise Leaflet controls to avoid kiosk bottom cutoffs */
+.leaflet-bottom.leaflet-right {
+  bottom: 96px !important;
+}
+
+.leaflet-bottom.leaflet-left {
+  bottom: 96px !important;
 }
 
 .custom-scrollbar::-webkit-scrollbar {

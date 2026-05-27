@@ -123,14 +123,14 @@ export function LeafletMap({
                   e.stopPropagation();
                   onSelectPoint(null);
                 }}
-                className="w-6 h-6 hover:bg-white/10 rounded-full flex items-center justify-center transition-colors"
+                className="w-6 h-6 hover:bg-white/10 rounded-full flex items-center justify-center transition-colors cursor-pointer"
                 title="Cerrar"
               >
                 <X size={14} />
               </button>
             </div>
 
-            <div className="p-3" onClick={(e) => e.stopPropagation()}>
+            <div className="p-3 animate-fade-in" onClick={(e) => e.stopPropagation()}>
               <PhotoSlider 
                 historical={selectedPoint.historicalPhoto}
                 current={selectedPoint.currentPhoto}
@@ -149,7 +149,7 @@ export function LeafletMap({
         </Popup>
       )}
 
-      {/* Recenter when a point is selected - offset to center the popup */}
+      {/* Recenter when a point is selected - offset to keep marker centered with popup space */}
       {selectedPointId && points.find(p => p.id === selectedPointId) && (
         <ChangeView 
           center={[

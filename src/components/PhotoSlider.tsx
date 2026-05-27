@@ -1,4 +1,4 @@
-import { useState, MouseEvent as ReactMouseEvent, TouchEvent as ReactTouchEvent } from 'react';
+import { useState, useEffect, useRef, MouseEvent as ReactMouseEvent, TouchEvent as ReactTouchEvent } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import { Columns, Layers, ArrowLeftRight, History, Maximize2, X, LocateFixed, Map as MapIcon } from 'lucide-react';
@@ -34,7 +34,13 @@ interface PhotoSliderProps {
   className?: string;
 }
 
-type ViewMode = 'side-by-side' | 'toggle';
+type ViewMode = 'slide' | 'side-by-side' | 'toggle';
+
+const isPhotoValid = (url: string | undefined | null): boolean => {
+  if (!url) return false;
+  const trimmed = url.trim();
+  return trimmed !== "" && trimmed !== "fotos" && trimmed !== "fotos/" && trimmed !== "/fotos" && trimmed !== "/fotos/";
+};
 
 export function PhotoSlider({ 
   historical, 
@@ -49,13 +55,67 @@ export function PhotoSlider({
   hasPrev, 
   className 
 }: PhotoSliderProps) {
+  const historicalSrc = isPhotoValid(historical) ? historical : null;
+  const currentSrc = isPhotoValid(current) ? current : null;
+  const hasBothPhotos = !!historicalSrc && !!currentSrc;
+
   const [viewMode, setViewMode] = useState<ViewMode>('side-by-side');
   const [activeToggle, setActiveToggle] = useState<'hist' | 'curr'>('hist');
   const [isFullSize, setIsFullSize] = useState(false);
   const [showMobileSidebar, setShowMobileSidebar] = useState(false);
 
+  // Swipe slider state
+  const [sliderPosition, setSliderPosition] = useState(50);
+  const [isDragging, setIsDragging] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  // Reset toggle selection to historical view when navigating to a different point
+  useEffect(() => {
+    setActiveToggle('hist');
+    setSliderPosition(50);
+  }, [historical]);
+
+  const handleMove = (clientX: number) => {
+    if (!containerRef.current) return;
+    const rect = containerRef.current.getBoundingClientRect();
+    const x = clientX - rect.left;
+    const percentage = Math.max(0, Math.min(100, (x / rect.width) * 100));
+    setSliderPosition(percentage);
+  };
+
+  useEffect(() => {
+    if (!isDragging) return;
+
+    const onMouseMove = (e: MouseEvent) => {
+      handleMove(e.clientX);
+    };
+
+    const onTouchMove = (e: TouchEvent) => {
+      if (e.touches && e.touches[0]) {
+        handleMove(e.touches[0].clientX);
+      }
+    };
+
+    const onMouseUp = () => {
+      setIsDragging(false);
+    };
+
+    window.addEventListener('mousemove', onMouseMove);
+    window.addEventListener('mouseup', onMouseUp);
+    window.addEventListener('touchmove', onTouchMove, { passive: true });
+    window.addEventListener('touchend', onMouseUp);
+
+    return () => {
+      window.removeEventListener('mousemove', onMouseMove);
+      window.removeEventListener('mouseup', onMouseUp);
+      window.removeEventListener('touchmove', onTouchMove);
+      window.removeEventListener('touchend', onMouseUp);
+    };
+  }, [isDragging]);
+
   const ViewerContent = ({ isModal = false, overrideViewMode }: { isModal?: boolean, overrideViewMode?: ViewMode }) => {
-    const currentViewMode = overrideViewMode || viewMode;
+    // If only one photo is available, override the view mode to 'toggle' showing only historical photo
+    const currentViewMode = !hasBothPhotos ? 'toggle' : (overrideViewMode || (isModal ? viewMode : 'side-by-side'));
     
     return (
       <div 
@@ -64,14 +124,93 @@ export function PhotoSlider({
           isModal ? "w-full h-full p-2 md:p-4 bg-black" : "w-full aspect-video"
         )}
       >
-        <div className={cn("relative h-full w-full", isModal ? "flex items-center justify-center" : "")}>
+        <div className={cn("relative h-full w-full flex items-center justify-center")}>
           <AnimatePresence mode="wait">
+            {currentViewMode === 'slide' && hasBothPhotos && (
+              <motion.div 
+                key="slide" 
+                initial={{ opacity: 0 }} 
+                animate={{ opacity: 1 }} 
+                exit={{ opacity: 0 }} 
+                className="relative w-full h-full select-none"
+              >
+                <div 
+                  ref={containerRef}
+                  className="relative w-full h-full overflow-hidden select-none cursor-ew-resize touch-none"
+                  onMouseDown={(e) => {
+                    e.stopPropagation(); // Safe for Leaflet map popups!
+                    e.preventDefault();
+                    setIsDragging(true);
+                    handleMove(e.clientX);
+                  }}
+                  onTouchStart={(e) => {
+                    e.stopPropagation(); // Safe for Leaflet map popups on Mobile!
+                    setIsDragging(true);
+                    if (e.touches && e.touches[0]) {
+                      handleMove(e.touches[0].clientX);
+                    }
+                  }}
+                >
+                  {/* Historical past photo on bottom */}
+                  <img 
+                    src={historicalSrc || undefined} 
+                    alt="Vista 1969"
+                    className={cn(
+                      "absolute inset-0 w-full h-full object-contain grayscale sepia-[0.2] pointer-events-none select-none",
+                      isModal ? "max-w-full max-h-[96vh]" : ""
+                    )} 
+                    referrerPolicy="no-referrer" 
+                  />
+                  <div className={cn(
+                    "absolute left-3 z-20 bg-black/75 backdrop-blur-md text-white text-[9px] md:text-[10px] font-bold uppercase px-2 py-1 md:px-2 md:py-0.5 tracking-[0.2em] border border-white/20 rounded shadow-xl pointer-events-none transition-opacity duration-300",
+                    sliderPosition < 15 ? "opacity-0" : "opacity-100",
+                    isModal ? "top-4 md:top-6 md:left-6" : "bottom-3 md:bottom-4 md:left-4"
+                  )}>1969</div>
+
+                  {/* Current present photo on top, clipped */}
+                  <img 
+                    src={currentSrc || undefined} 
+                    alt="Vista Actual"
+                    className={cn(
+                      "absolute inset-0 w-full h-full object-contain pointer-events-none select-none",
+                      isModal ? "max-w-full max-h-[96vh]" : ""
+                    )} 
+                    style={{
+                      clipPath: `polygon(${sliderPosition}% 0, 100% 0, 100% 100%, ${sliderPosition}% 100%)`
+                    }}
+                    referrerPolicy="no-referrer" 
+                  />
+                  <div className={cn(
+                    "absolute right-3 z-20 bg-brand-primary backdrop-blur-md text-white text-[9px] md:text-[10px] font-bold uppercase px-2 py-1 md:px-2 md:py-0.5 tracking-[0.2em] border border-white/20 rounded shadow-xl pointer-events-none transition-opacity duration-300",
+                    sliderPosition > 85 ? "opacity-0" : "opacity-100",
+                    isModal ? "top-4 md:top-6 md:right-6" : "bottom-3 md:bottom-4 md:right-4"
+                  )}>Hoy</div>
+
+                  {/* Split bar line */}
+                  <div 
+                    className="absolute top-0 bottom-0 w-0.5 bg-white shadow-[0_0_8px_rgba(0,0,0,0.5)] z-30 pointer-events-none"
+                    style={{ left: `${sliderPosition}%` }}
+                  />
+
+                  {/* Interactive Handle */}
+                  <div 
+                    className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 z-40 select-none pointer-events-none"
+                    style={{ left: `${sliderPosition}%` }}
+                  >
+                    <div className="w-8 h-8 rounded-full bg-white border border-brand-primary shadow-[0_4px_12px_rgba(0,0,0,0.4)] flex items-center justify-center text-brand-primary transition-transform duration-100 scale-100 group-hover/viewer:scale-110 active:scale-95">
+                      <ArrowLeftRight size={14} />
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+
             {currentViewMode === 'side-by-side' && (
               <motion.div key="side" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="grid grid-cols-2 gap-px bg-editorial-text/10 h-full w-full">
                 <div className="relative flex items-center justify-center overflow-hidden bg-black h-full">
-                  {historical ? (
+                  {historicalSrc ? (
                     <img 
-                      src={historical} 
+                      src={historicalSrc} 
                       alt="Vista 1969"
                       className={cn(
                         "block grayscale sepia-[0.2] object-contain w-full h-full",
@@ -88,9 +227,9 @@ export function PhotoSlider({
                   )}>1969</div>
                 </div>
                 <div className="relative flex items-center justify-center overflow-hidden bg-black h-full">
-                  {current ? (
+                  {currentSrc ? (
                     <img 
-                      src={current} 
+                      src={currentSrc} 
                       alt="Vista Actual" 
                       className={cn(
                         "block object-contain w-full h-full",
@@ -111,9 +250,9 @@ export function PhotoSlider({
 
             {currentViewMode === 'toggle' && (
               <motion.div key="toggle" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="relative flex items-center justify-center bg-black/10 h-full w-full">
-                {(activeToggle === 'hist' ? historical : current) ? (
+                {(activeToggle === 'hist' ? historicalSrc : currentSrc) ? (
                   <img 
-                    src={activeToggle === 'hist' ? historical : current} 
+                    src={(activeToggle === 'hist' ? historicalSrc : currentSrc) || undefined} 
                     alt={activeToggle === 'hist' ? "Vista 1969" : "Vista Actual"}
                     className={cn(
                       "block transition-all duration-500 object-contain w-full h-full", 
@@ -123,7 +262,13 @@ export function PhotoSlider({
                     referrerPolicy="no-referrer"
                   />
                 ) : (
-                  <div className="text-black/20 text-[10px] uppercase tracking-widest font-bold">Imagen no disponible</div>
+                  <div className="text-black/20 text-[10px] uppercase tracking-widest font-bold text-center p-4">Imagen no disponible</div>
+                )}
+                {hasBothPhotos && (
+                  <div className={cn(
+                    "absolute left-3 z-20 bg-black/75 backdrop-blur-md text-white text-[9px] md:text-[10px] font-bold uppercase px-2 py-1 md:px-2 md:py-0.5 tracking-[0.2em] border border-white/20 rounded shadow-xl",
+                    isModal ? "top-4 md:top-6 md:left-6" : "bottom-3 md:bottom-4 md:left-4"
+                  )}>{activeToggle === 'hist' ? '1969' : 'Hoy'}</div>
                 )}
               </motion.div>
             )}
@@ -131,69 +276,92 @@ export function PhotoSlider({
         </div>
       </div>
     );
-  };;
+  };
 
-  const ModeSelector = ({ isModal = false }: { isModal?: boolean }) => (
-    <div className={cn(
-      "flex p-1 rounded-full border items-center mx-auto",
-      isModal 
-        ? "bg-black/40 backdrop-blur-xl border-white/20" 
-        : "bg-white border-editorial-text/10 shadow-sm"
-    )}>
-      <button 
-        onClick={(e) => { e.stopPropagation(); setViewMode('side-by-side'); }}
-        className={cn(
-          "px-3 h-8 rounded-full flex items-center justify-center gap-1.5 transition-all outline-none",
-          viewMode === 'side-by-side' 
-            ? "bg-brand-primary text-white shadow-lg" 
-            : isModal ? "text-white/40 hover:text-white" : "text-editorial-text/40 hover:text-editorial-text hover:bg-black/5"
-        )}
-      >
-        <Columns size={12} />
-        <span className="text-[8px] font-bold uppercase tracking-widest">Lados</span>
-      </button>
-      <button 
-        onClick={(e) => { e.stopPropagation(); setViewMode('toggle'); }}
-        className={cn(
-          "px-3 h-8 rounded-full flex items-center justify-center gap-1.5 transition-all outline-none",
-          viewMode === 'toggle' 
-            ? "bg-brand-primary text-white shadow-lg" 
-            : isModal ? "text-white/40 hover:text-white" : "text-editorial-text/40 hover:text-editorial-text hover:bg-black/5"
-        )}
-      >
-        <Layers size={12} />
-        <span className="text-[8px] font-bold uppercase tracking-widest">Alternar</span>
-      </button>
-    </div>
-  );
+  const ModeSelector = ({ isModal = false }: { isModal?: boolean }) => {
+    if (!hasBothPhotos) return null;
+    return (
+      <div className={cn(
+        "flex p-1 rounded-full border items-center mx-auto",
+        isModal 
+          ? "bg-black/40 backdrop-blur-xl border-white/20" 
+          : "bg-white border-editorial-text/10 shadow-sm"
+      )}>
+        {/* Lados */}
+        <button 
+          onClick={(e) => { e.stopPropagation(); setViewMode('side-by-side'); }}
+          className={cn(
+            "px-2.5 h-8 rounded-full flex items-center justify-center gap-1 transition-all outline-none cursor-pointer",
+            viewMode === 'side-by-side' 
+              ? "bg-brand-primary text-white shadow-lg font-bold" 
+              : isModal ? "text-white/40 hover:text-white" : "text-editorial-text/40 hover:text-editorial-text hover:bg-black/5"
+          )}
+        >
+          <Columns size={11} />
+          <span className="text-[7.5px] uppercase tracking-widest font-sans font-bold">Lados</span>
+        </button>
 
-  const ToggleSelector = ({ isModal = false }: { isModal?: boolean }) => (
-    <div className={cn(
-      "flex p-1 rounded-full border items-center mx-auto",
-      isModal 
-        ? "bg-black/40 backdrop-blur-xl border-white/20" 
-        : "bg-white border-editorial-text/10 shadow-sm"
-    )}>
-      <button 
-        onClick={(e) => { e.stopPropagation(); setActiveToggle('hist'); }}
-        className={cn(
-          "px-5 py-1.5 rounded-full font-bold text-[9px] uppercase tracking-widest transition-all outline-none", 
-          activeToggle === 'hist' ? "bg-brand-primary text-white shadow-md" : isModal ? "text-white/40 hover:text-white" : "text-editorial-text/40 hover:text-editorial-text hover:bg-black/5"
-        )}
-      >
-        1969
-      </button>
-      <button 
-        onClick={(e) => { e.stopPropagation(); setActiveToggle('curr'); }}
-        className={cn(
-          "px-5 py-1.5 rounded-full font-bold text-[9px] uppercase tracking-widest transition-all outline-none", 
-          activeToggle === 'curr' ? "bg-brand-primary text-white shadow-md" : isModal ? "text-white/40 hover:text-white" : "text-editorial-text/40 hover:text-editorial-text hover:bg-black/5"
-        )}
-      >
-        Hoy
-      </button>
-    </div>
-  );
+        {/* Alternar */}
+        <button 
+          onClick={(e) => { e.stopPropagation(); setViewMode('toggle'); }}
+          className={cn(
+            "px-2.5 h-8 rounded-full flex items-center justify-center gap-1 transition-all outline-none cursor-pointer",
+            viewMode === 'toggle' 
+              ? "bg-brand-primary text-white shadow-lg font-bold" 
+              : isModal ? "text-white/40 hover:text-white" : "text-editorial-text/40 hover:text-editorial-text hover:bg-black/5"
+          )}
+        >
+          <Layers size={11} />
+          <span className="text-[7.5px] uppercase tracking-widest font-sans font-bold">Alternar</span>
+        </button>
+
+        {/* Deslizar */}
+        <button 
+          onClick={(e) => { e.stopPropagation(); setViewMode('slide'); }}
+          className={cn(
+            "px-2.5 h-8 rounded-full flex items-center justify-center gap-1 transition-all outline-none cursor-pointer",
+            viewMode === 'slide' 
+              ? "bg-brand-primary text-white shadow-lg font-bold" 
+              : isModal ? "text-white/40 hover:text-white" : "text-editorial-text/40 hover:text-editorial-text hover:bg-black/5"
+          )}
+        >
+          <ArrowLeftRight size={11} />
+          <span className="text-[7.5px] uppercase tracking-widest font-sans font-bold">Deslizar</span>
+        </button>
+      </div>
+    );
+  };
+
+  const ToggleSelector = ({ isModal = false }: { isModal?: boolean }) => {
+    if (!hasBothPhotos) return null;
+    return (
+      <div className={cn(
+        "flex p-1 rounded-full border items-center mx-auto",
+        isModal 
+          ? "bg-black/40 backdrop-blur-xl border-white/20" 
+          : "bg-white border-editorial-text/10 shadow-sm"
+      )}>
+        <button 
+          onClick={(e) => { e.stopPropagation(); setActiveToggle('hist'); }}
+          className={cn(
+            "px-5 py-1.5 rounded-full font-bold text-[9px] uppercase tracking-widest transition-all outline-none cursor-pointer", 
+            activeToggle === 'hist' ? "bg-brand-primary text-white shadow-md" : isModal ? "text-white/40 hover:text-white" : "text-editorial-text/40 hover:text-editorial-text hover:bg-black/5"
+          )}
+        >
+          1969
+        </button>
+        <button 
+          onClick={(e) => { e.stopPropagation(); setActiveToggle('curr'); }}
+          className={cn(
+            "px-5 py-1.5 rounded-full font-bold text-[9px] uppercase tracking-widest transition-all outline-none cursor-pointer", 
+            activeToggle === 'curr' ? "bg-brand-primary text-white shadow-md" : isModal ? "text-white/40 hover:text-white" : "text-editorial-text/40 hover:text-editorial-text hover:bg-black/5"
+          )}
+        >
+          Hoy
+        </button>
+      </div>
+    );
+  };
 
   const MiniMap = ({ isModalSidebar = false }: { isModalSidebar?: boolean }) => {
     if (!lat || !lng) return null;
@@ -223,7 +391,7 @@ export function PhotoSlider({
 
   return (
     <div className={cn("flex flex-col gap-3", className)}>
-      <ViewerContent overrideViewMode="side-by-side" />
+      <ViewerContent />
 
       <div className="space-y-2 px-1">
         <h2 className="text-[10px] font-bold tracking-tight font-display uppercase leading-tight text-editorial-text">
@@ -238,7 +406,7 @@ export function PhotoSlider({
       <div className="px-0.5 mt-1 flex flex-col gap-2">
         <button 
           onClick={() => setIsFullSize(true)}
-          className="w-full h-9 bg-brand-primary text-white rounded-lg flex items-center justify-center gap-2 shadow-lg hover:bg-brand-primary/90 transition-all active:scale-[0.98] group"
+          className="w-full h-9 bg-brand-primary text-white rounded-lg flex items-center justify-center gap-2 shadow-lg hover:bg-brand-primary/90 transition-all active:scale-[0.98] group cursor-pointer"
         >
           <Maximize2 size={13} className="opacity-80 group-hover:scale-110 transition-transform" />
           <span className="text-[7px] uppercase font-bold tracking-[0.3em]">Exploración Inmersiva</span>
@@ -328,7 +496,7 @@ export function PhotoSlider({
                 {/* Desktop Toggle (Handled in Sidebar on Desktop, but kept here for toggle mode logic) */}
                 <div className="hidden md:block">
                   {viewMode === 'toggle' && (
-                    <div className="absolute bottom-10 left-0 right-0 z-50 flex justify-center px-4">
+                    <div className="absolute bottom-28 md:bottom-36 left-0 right-0 z-50 flex justify-center px-4">
                       <ToggleSelector isModal />
                     </div>
                   )}
@@ -343,11 +511,12 @@ export function PhotoSlider({
                 {/* Mobile Close Handle */}
                 <button 
                   onClick={() => setShowMobileSidebar(false)}
-                  className="md:hidden absolute top-6 right-6 w-10 h-10 bg-black/5 hover:bg-black/10 rounded-full flex items-center justify-center text-editorial-text/40 transition-colors z-20"
+                  className="md:hidden absolute top-4 right-4 w-10 h-10 bg-black/5 hover:bg-black/10 rounded-full flex items-center justify-center text-editorial-text/40 transition-colors z-30"
                 >
                   <X size={20} />
                 </button>
 
+                {/* Flex-1 text details - NOW AT THE TOP so they fill upper space */}
                 <div className="flex-1 overflow-y-auto p-6 md:p-8 custom-scrollbar landscape:p-4 landscape:pt-10">
                   <div className="flex flex-col gap-1 mb-4 landscape:mb-3">
                     <div className="text-[8px] uppercase tracking-[0.4em] font-bold text-brand-primary">Info Inmersiva</div>
@@ -379,15 +548,24 @@ export function PhotoSlider({
                   </div>
                 </div>
 
-                {/* Highly accessible Navigation and Close Buttons for Touch Screens */}
-                <div className="p-4 md:p-6 border-t border-editorial-text/10 bg-editorial-bg/50 backdrop-blur-md space-y-3 landscape:p-3 landscape:space-y-2">
-                  {/* Navigation Row */}
-                  <div className="grid grid-cols-2 gap-3 pb-1 landscape:pb-0 landscape:gap-2">
+                {/* Persistent Control Bar for Giant Screens & Kiosks - NOW BELOW THE TEXT */}
+                <div className="p-4 md:p-6 pb-20 md:pb-24 border-t border-editorial-text/10 bg-editorial-bg/95 backdrop-blur-md space-y-3 z-20">
+                  {/* Exit / Return to map comes first and is highly visible and accessible */}
+                  <button 
+                    onClick={() => setIsFullSize(false)}
+                    className="w-full h-12 bg-brand-primary text-white rounded-xl flex items-center justify-center gap-3 shadow-lg hover:bg-editorial-text transition-all active:scale-95 group cursor-pointer"
+                  >
+                    <LocateFixed size={14} />
+                    <span className="text-[9px] uppercase font-bold tracking-[0.3em]">Volver al Mapa</span>
+                  </button>
+
+                  {/* Navigation row directly under it */}
+                  <div className="grid grid-cols-2 gap-3">
                     <button 
                       onClick={onPrev}
                       disabled={!hasPrev}
                       className={cn(
-                        "h-12 rounded-xl flex items-center justify-center gap-2 font-bold text-[9px] uppercase tracking-widest border transition-all",
+                        "h-12 rounded-xl flex items-center justify-center gap-2 font-bold text-[9px] uppercase tracking-widest border transition-all cursor-pointer",
                         hasPrev 
                           ? "bg-white text-editorial-text border-editorial-text/10 shadow-lg hover:bg-gray-50 active:scale-95" 
                           : "opacity-20 cursor-not-allowed bg-black/5"
@@ -400,7 +578,7 @@ export function PhotoSlider({
                       onClick={onNext}
                       disabled={!hasNext}
                       className={cn(
-                        "h-12 rounded-xl flex items-center justify-center gap-2 font-bold text-[9px] uppercase tracking-widest border transition-all",
+                        "h-12 rounded-xl flex items-center justify-center gap-2 font-bold text-[9px] uppercase tracking-widest border transition-all cursor-pointer",
                         hasNext 
                           ? "bg-white text-editorial-text border-editorial-text/10 shadow-lg hover:bg-gray-50 active:scale-95" 
                           : "opacity-20 cursor-not-allowed bg-black/5"
@@ -410,14 +588,6 @@ export function PhotoSlider({
                       <ArrowLeftRight size={14} className="opacity-40" />
                     </button>
                   </div>
-                  
-                  <button 
-                    onClick={() => setIsFullSize(false)}
-                    className="w-full h-12 bg-brand-primary text-white rounded-xl flex items-center justify-center gap-3 shadow-lg hover:bg-editorial-text transition-all active:scale-95 group"
-                  >
-                    <LocateFixed size={14} />
-                    <span className="text-[9px] uppercase font-bold tracking-[0.3em]">Volver al Mapa</span>
-                  </button>
                 </div>
               </div>
             </motion.div>

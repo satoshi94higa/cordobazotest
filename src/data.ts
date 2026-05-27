@@ -134,7 +134,7 @@ export const NILO_POINTS: NiloPoint[] = [
     "lat": -31.41239726343689,
     "lng": -64.18719120549778,
     "historicalPhoto": "fotos/AS-122.jpg",
-    "currentPhoto": "fotos/"
+    "currentPhoto": "fotos/_A743233.jpg"
   },
   {
     "id": "13",
@@ -144,6 +144,6 @@ export const NILO_POINTS: NiloPoint[] = [
     "lat": -31.412400875092505,
     "lng": -64.18550644737309,
     "historicalPhoto": "fotos/AS-146.jpg",
-    "currentPhoto": "fotos/"
+    "currentPhoto": "fotos/_A743225.jpg"
   }
 ];

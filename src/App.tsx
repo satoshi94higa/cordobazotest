@@ -117,7 +117,7 @@ export default function App() {
         />
       </main>
 
-      {/* Details balloon removed from here (now in LeafletMap) */}
+
 
 
 
