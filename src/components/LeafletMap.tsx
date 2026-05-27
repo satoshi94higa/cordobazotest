@@ -1,9 +1,16 @@
 import { MapContainer, TileLayer, Marker, Popup, useMap, ZoomControl, useMapEvents, Tooltip } from 'react-leaflet';
 import L from 'leaflet';
 import { NiloPoint } from '@/src/data';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { PhotoSlider } from './PhotoSlider';
-import { X } from 'lucide-react';
+import { X, AlertTriangle, RefreshCw } from 'lucide-react';
+
+// Crucial fix for older Android TV WebViews: 
+// Force Leaflet to use standard 2D translation (translate) instead of CSS 3D translate3d, 
+// which is buggy or completely unaccelerated on low-end TV chips and custom Android Kiosk wrappers.
+if (typeof window !== 'undefined' && L.Browser) {
+  (L.Browser as any).any3d = false;
+}
 
 const createCustomIcon = (order: number, isSelected: boolean) => L.divIcon({
   className: 'custom-marker',
@@ -37,11 +44,21 @@ function ChangeView({ center, zoom }: { center: [number, number]; zoom: number }
 }
 
 function MapEvents({ onMapClick }: { onMapClick: () => void }) {
+  const map = useMap();
   useMapEvents({
     click: () => {
       onMapClick();
     },
   });
+  
+  // Trigger a container resize recalculation on mount to guarantee Leaflet detects the correct parent size
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      map.invalidateSize();
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [map]);
+
   return null;
 }
 
@@ -56,6 +73,8 @@ export function LeafletMap({
   hasPrev
 }: MapProps) {
   const cordobaCenter: [number, number] = [-31.4167, -64.186];
+  const [tileError, setTileError] = useState(false);
+  const [showTroubleshoot, setShowTroubleshoot] = useState(false);
 
   // Límites aproximados de la Ciudad de Córdoba para restringir el movimiento
   const cordobaBounds: L.LatLngBoundsExpression = [
@@ -63,103 +82,173 @@ export function LeafletMap({
     [-31.30, -64.05], // Noreste
   ];
 
+  // Auto-display troubleshooting banner if tile loading fails or loads extremely slowly
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      // In kiosk WebViews, if tiles haven't appeared or if CORS acts up, let's allow showing a manual diagnostic helper
+      setShowTroubleshoot(true);
+    }, 4000);
+    return () => clearTimeout(timer);
+  }, []);
+
   return (
-    <MapContainer 
-      center={cordobaCenter} 
-      zoom={14} 
-      minZoom={12} 
-      maxZoom={18}
-      maxBounds={cordobaBounds}
-      maxBoundsViscosity={1.0}
-      style={{ height: '100%', width: '100%' }}
-      zoomControl={false}
-      scrollWheelZoom={true}
-    >
-      <TileLayer
-        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-      />
-      <ZoomControl position="bottomright" />
-      
-      <MapEvents onMapClick={() => onSelectPoint(null)} />
-      
-      {points.map((point) => (
-        <Marker 
-          key={point.id} 
-          position={[point.lat, point.lng]} 
-          icon={createCustomIcon(point.order, selectedPointId === point.id)}
-          eventHandlers={{
-            click: () => onSelectPoint(point),
-          }}
-          zIndexOffset={selectedPointId === point.id ? 1000 : 0}
-        >
-          <Tooltip direction="top" offset={[0, -10]} opacity={1}>
-            <div className="px-2 py-1 bg-white font-bold text-[10px] uppercase tracking-wider border border-brand-primary/20 shadow-sm">
-              {point.title}
-            </div>
-          </Tooltip>
-        </Marker>
-      ))}
-
-      {/* Georeferenced Editorial Balloon Popup */}
-      {selectedPoint && (
-        <Popup 
-          position={[selectedPoint.lat, selectedPoint.lng]}
-          closeButton={false}
-          autoPan={true}
-          autoPanPadding={[50, 50]}
-          className="editorial-popup"
-          offset={[0, -20]}
-          maxWidth={500}
-        >
-          <div className="bg-editorial-bg shadow-2xl rounded-2xl overflow-hidden border border-editorial-text/10 flex flex-col w-[380px] md:w-[480px]">
-            <div className="p-2 border-b border-editorial-text/5 flex justify-between items-center bg-editorial-text text-white">
-              <div className="flex items-center gap-2">
-                <div className="w-1.5 h-1.5 bg-brand-primary rounded-full animate-pulse" />
-                <h3 className="text-[8px] font-bold uppercase tracking-widest truncate max-w-[180px]">{selectedPoint.title}</h3>
+    <div className="absolute inset-0 w-full h-full z-0 overflow-hidden">
+      {/* Troubleshooting and Diagnostic Banner for Android TV WebViews */}
+      {showTroubleshoot && (
+        <div className="absolute top-24 left-1/2 -translate-x-1/2 z-[2000] w-[90%] max-w-xl bg-amber-50 border-l-4 border-amber-600 p-4 shadow-xl rounded-r-lg animate-fade-in pointer-events-auto">
+          <div className="flex gap-3">
+            <AlertTriangle className="text-amber-600 flex-shrink-0" size={20} />
+            <div className="flex-1">
+              <h4 className="text-xs font-black uppercase text-amber-900 tracking-wider">Asistencia de Visualización (Modo TV / Kiosco)</h4>
+              <p className="text-[10px] text-amber-800 leading-normal mt-1">
+                ¿El mapa se ve gris u opaco? Los Smart TV de Android suelen desconfigurar su <strong>fecha y hora</strong> al reiniciarse. Si la hora no es correcta, la TV bloquea por seguridad (SSL) los mapas. Verifique que:
+              </p>
+              <ul className="list-disc list-inside text-[9px] text-amber-700 space-y-0.5 mt-1.5 font-mono">
+                <li>La fecha y hora del sistema de la TV sean las actuales de hoy.</li>
+                <li>La TV tenga conexión estable a internet para cargar el mapa.</li>
+              </ul>
+              <div className="flex gap-2 mt-3">
+                <button 
+                  onClick={() => {
+                    setTileError(false);
+                    window.location.reload();
+                  }}
+                  className="px-2.5 py-1 bg-amber-600 text-white rounded text-[9px] font-bold uppercase tracking-wider hover:bg-amber-700 flex items-center gap-1 cursor-pointer transition-colors"
+                >
+                  <RefreshCw size={10} /> Recargar todo
+                </button>
+                <button 
+                  onClick={() => setShowTroubleshoot(false)}
+                  className="px-2 py-1 bg-amber-100 hover:bg-amber-200 text-amber-800 rounded text-[9px] font-bold uppercase cursor-pointer transition-colors"
+                >
+                  Entendido
+                </button>
               </div>
-              <button 
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onSelectPoint(null);
-                }}
-                className="w-6 h-6 hover:bg-white/10 rounded-full flex items-center justify-center transition-colors cursor-pointer"
-                title="Cerrar"
-              >
-                <X size={14} />
-              </button>
             </div>
-
-            <div className="p-3 animate-fade-in" onClick={(e) => e.stopPropagation()}>
-              <PhotoSlider 
-                historical={selectedPoint.historicalPhoto}
-                current={selectedPoint.currentPhoto}
-                title={selectedPoint.title}
-                description={selectedPoint.description}
-                lat={selectedPoint.lat}
-                lng={selectedPoint.lng}
-                onNext={onNext || (() => {})}
-                onPrev={onPrev || (() => {})}
-                hasNext={hasNext || false}
-                hasPrev={hasPrev || false}
-                className="shadow-lg rounded-lg overflow-hidden"
-                isPopup={true}
-              />
-            </div>
+            <button 
+              onClick={() => setShowTroubleshoot(false)}
+              className="text-amber-600 hover:text-amber-900 text-[10px]"
+            >
+              <X size={16} />
+            </button>
           </div>
-        </Popup>
+        </div>
       )}
 
-      {/* Recenter when a point is selected - offset to keep marker centered with popup space */}
-      {selectedPointId && points.find(p => p.id === selectedPointId) && (
-        <ChangeView 
-          center={[
-            points.find(p => p.id === selectedPointId)!.lat + 0.0007, 
-            points.find(p => p.id === selectedPointId)!.lng
-          ]} 
-          zoom={17} 
+      <MapContainer 
+        center={cordobaCenter} 
+        zoom={14} 
+        minZoom={12} 
+        maxZoom={18}
+        maxBounds={cordobaBounds}
+        maxBoundsViscosity={1.0}
+        style={{ 
+          position: 'absolute',
+          top: 0,
+          bottom: 0,
+          left: 0,
+          right: 0,
+          height: '100%', 
+          width: '100%',
+          backgroundColor: '#FBEFE4' // Warm paper-like background matching the editorial theme, instead of generic gray blocks
+        }}
+        zoomControl={false}
+        scrollWheelZoom={true}
+        preferCanvas={true} // Forces Leaflet to render in a high-performance Canvas, significantly more reliable in older WebViews than SVGs
+      >
+        <TileLayer
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          eventHandlers={{
+            tileerror: (error) => {
+              console.error("Tile layer failed loading tiles:", error);
+              setTileError(true);
+              setShowTroubleshoot(true);
+            }
+          }}
         />
-      )}
-    </MapContainer>
+        <ZoomControl position="bottomright" />
+        
+        <MapEvents onMapClick={() => onSelectPoint(null)} />
+        
+        {points.map((point) => (
+          <Marker 
+            key={point.id} 
+            position={[point.lat, point.lng]} 
+            icon={createCustomIcon(point.order, selectedPointId === point.id)}
+            eventHandlers={{
+              click: () => onSelectPoint(point),
+            }}
+            zIndexOffset={selectedPointId === point.id ? 1000 : 0}
+          >
+            <Tooltip direction="top" offset={[0, -10]} opacity={1}>
+              <div className="px-2 py-1 bg-white font-bold text-[10px] uppercase tracking-wider border border-brand-primary/20 shadow-sm">
+                {point.title}
+              </div>
+            </Tooltip>
+          </Marker>
+        ))}
+
+        {/* Georeferenced Editorial Balloon Popup */}
+        {selectedPoint && (
+          <Popup 
+            position={[selectedPoint.lat, selectedPoint.lng]}
+            closeButton={false}
+            autoPan={true}
+            autoPanPadding={[50, 50]}
+            className="editorial-popup"
+            offset={[0, -20]}
+            maxWidth={500}
+          >
+            <div className="bg-editorial-bg shadow-2xl rounded-2xl overflow-hidden border border-editorial-text/10 flex flex-col w-[380px] md:w-[480px]">
+              <div className="p-2 border-b border-editorial-text/5 flex justify-between items-center bg-editorial-text text-white">
+                <div className="flex items-center gap-2">
+                  <div className="w-1.5 h-1.5 bg-brand-primary rounded-full animate-pulse" />
+                  <h3 className="text-[8px] font-bold uppercase tracking-widest truncate max-w-[180px]">{selectedPoint.title}</h3>
+                </div>
+                <button 
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onSelectPoint(null);
+                  }}
+                  className="w-6 h-6 hover:bg-white/10 rounded-full flex items-center justify-center transition-colors cursor-pointer"
+                  title="Cerrar"
+                >
+                  <X size={14} />
+                </button>
+              </div>
+
+              <div className="p-3 animate-fade-in" onClick={(e) => e.stopPropagation()}>
+                <PhotoSlider 
+                  historical={selectedPoint.historicalPhoto}
+                  current={selectedPoint.currentPhoto}
+                  title={selectedPoint.title}
+                  description={selectedPoint.description}
+                  lat={selectedPoint.lat}
+                  lng={selectedPoint.lng}
+                  onNext={onNext || (() => {})}
+                  onPrev={onPrev || (() => {})}
+                  hasNext={hasNext || false}
+                  hasPrev={hasPrev || false}
+                  className="shadow-lg rounded-lg overflow-hidden flex-1"
+                  isPopup={true}
+                />
+              </div>
+            </div>
+          </Popup>
+        )}
+
+        {/* Recenter when a point is selected - offset to keep marker centered with popup space */}
+        {selectedPointId && points.find(p => p.id === selectedPointId) && (
+          <ChangeView 
+            center={[
+              points.find(p => p.id === selectedPointId)!.lat + 0.0007, 
+              points.find(p => p.id === selectedPointId)!.lng
+            ]} 
+            zoom={17} 
+          />
+        )}
+      </MapContainer>
+    </div>
   );
 }

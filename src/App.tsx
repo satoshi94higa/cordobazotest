@@ -111,7 +111,7 @@ export default function App() {
       </header>
 
       {/* Main Map Container */}
-      <main className="w-full h-full relative">
+      <main className="absolute inset-0 w-full h-full z-0 overflow-hidden">
         <LeafletMap 
           points={NILO_POINTS} 
           onSelectPoint={(point) => {
