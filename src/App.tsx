@@ -133,68 +133,7 @@ export default function App() {
             </span>
           </div>
 
-<<<<<<< HEAD
           <div className="flex items-center gap-2 flex-shrink-0">
-=======
-          {/* Indicaciones / Información de navegación */}
-          <div className="pointer-events-auto bg-editorial-bg/80 backdrop-blur-md p-3 md:p-4 border border-editorial-text/10 shadow-sm max-w-[240px] md:max-w-xs flex flex-col gap-2.5">
-            <p className="text-[9px] md:text-[11px] text-editorial-text/80 leading-relaxed">
-              Tocá los puntos georreferenciados para ver las fotos de Nilo Silvestrone e imágenes actuales del lugar. También podés navegar por el índice del archivo.
-            </p>
-            <p className="text-[9px] md:text-[11px] font-bold text-brand-primary leading-relaxed">
-              Ingresá a la Exploración Inmersiva para ver las fotos a pantalla completa.
-            </p>
-          </div>
-
-          {/* Indicaciones / Información de navegación */}
-          <div className="pointer-events-auto bg-editorial-bg/80 backdrop-blur-md p-3 md:p-4 border border-editorial-text/10 shadow-sm max-w-[240px] md:max-w-xs flex flex-col gap-2.5">
-            <p className="text-[9px] md:text-[11px] text-editorial-text/80 leading-relaxed">
-              Tocá los puntos georreferenciados para ver las fotos de Nilo Silvestrone e imágenes actuales del lugar. También podés navegar por el índice del archivo.
-            </p>
-            <p className="text-[9px] md:text-[11px] font-bold text-brand-primary leading-relaxed">
-              Ingresá a la Exploración Inmersiva para ver las fotos a pantalla completa.
-            </p>
-          </div>
-
-          {/* Permanent Index List */}
-          <div className="pointer-events-auto w-64 max-h-[50vh] flex flex-col gap-2 bg-editorial-bg/40 backdrop-blur-sm p-2 border border-editorial-text/10 rounded-xl">
-            <div className="text-[7px] uppercase tracking-[0.4em] font-bold text-brand-primary mb-0.5 border-b border-editorial-text/10 pb-0.5 flex items-center gap-1.5">
-               <MapPin size={8} /> Indice del archivo
-            </div>
-            <div className="flex flex-col gap-0.5 overflow-y-auto pr-1.5 custom-scrollbar">
-              {pointsSorted.map((point) => (
-                <button
-                  key={point.id}
-                  onClick={() => {
-                    setSelectedPoint(point);
-                    setFocusedPointId(point.id);
-                  }}
-                  className={`group flex items-center gap-2.5 p-1.5 text-left transition-all border rounded-md ${
-                    selectedPoint?.id === point.id 
-                      ? "bg-editorial-text text-white border-editorial-text shadow-sm" 
-                      : "bg-editorial-bg/80 backdrop-blur-md border-editorial-text/5 hover:border-editorial-text/20 hover:bg-white"
-                  }`}
-                >
-                  <span className={`font-mono text-[7px] font-bold ${
-                    selectedPoint?.id === point.id ? "text-brand-primary" : "opacity-30"
-                  }`}>
-                    {point.order.toString().padStart(2, '0')}
-                  </span>
-                  <div className="flex-1 truncate">
-                    <h4 className="text-[8px] font-bold uppercase tracking-widest leading-none truncate">
-                      {point.title}
-                    </h4>
-                  </div>
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* Right Side: Navigation & About */}
-        <div className="flex flex-col gap-2 items-end">
-          <div className="flex gap-1.5 pointer-events-auto">
->>>>>>> 6aa8c7ab8c99be5a1936f4062eb5f7e2ed304cab
             <button 
               onClick={() => {
                 setShowMobileIndex(!showMobileIndex);

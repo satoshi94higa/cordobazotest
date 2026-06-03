@@ -1,7 +1,7 @@
 import { MapContainer, TileLayer, Marker, Popup, useMap, ZoomControl, useMapEvents, Tooltip } from 'react-leaflet';
 import L from 'leaflet';
 import { NiloPoint } from '@/src/data';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { PhotoSlider } from './PhotoSlider';
 import { X } from 'lucide-react';
 
@@ -74,6 +74,17 @@ export function LeafletMap({
  }: MapProps) {
   const cordobaCenter: [number, number] = [-31.4167, -64.186];
 
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
   // Límites aproximados de la Ciudad de Córdoba para restringir el movimiento
   const cordobaBounds: L.LatLngBoundsExpression = [
     [-31.55, -64.35], // Suroeste - Ampliado un poco
@@ -130,7 +141,7 @@ export function LeafletMap({
         ))}
 
         {/* Georeferenced Editorial Balloon Popup */}
-        {selectedPoint && (
+        {selectedPoint && !isMobile && (
           <Popup 
             position={[selectedPoint.lat, selectedPoint.lng]}
             closeButton={false}
@@ -182,7 +193,7 @@ export function LeafletMap({
         {selectedPointId && points.find(p => p.id === selectedPointId) && (
           <ChangeView 
             center={[
-              points.find(p => p.id === selectedPointId)!.lat + 0.0007, 
+              points.find(p => p.id === selectedPointId)!.lat + (isMobile ? -0.0018 : 0.0007), 
               points.find(p => p.id === selectedPointId)!.lng
             ]} 
             zoom={17} 
