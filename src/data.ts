@@ -79,11 +79,7 @@ export const NILO_POINTS: NiloPoint[] = [
   {
     "id": "7",
     "order": 7,
-<<<<<<< HEAD
-    "title": "Av. Colón y Fragueiro",
-=======
     "title": "Av. Colón y Fraguerio",
->>>>>>> 6aa8c7ab8c99be5a1936f4062eb5f7e2ed304cab
     "description": "Manifestantes incendian el local de la empresa estadounidense Xerox.",
     "lat": -31.41071713240025,
     "lng": -64.19267246841827,

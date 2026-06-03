@@ -146,6 +146,16 @@ export default function App() {
             </p>
           </div>
 
+          {/* Indicaciones / Información de navegación */}
+          <div className="pointer-events-auto bg-editorial-bg/80 backdrop-blur-md p-3 md:p-4 border border-editorial-text/10 shadow-sm max-w-[240px] md:max-w-xs flex flex-col gap-2.5">
+            <p className="text-[9px] md:text-[11px] text-editorial-text/80 leading-relaxed">
+              Tocá los puntos georreferenciados para ver las fotos de Nilo Silvestrone e imágenes actuales del lugar. También podés navegar por el índice del archivo.
+            </p>
+            <p className="text-[9px] md:text-[11px] font-bold text-brand-primary leading-relaxed">
+              Ingresá a la Exploración Inmersiva para ver las fotos a pantalla completa.
+            </p>
+          </div>
+
           {/* Permanent Index List */}
           <div className="pointer-events-auto w-64 max-h-[50vh] flex flex-col gap-2 bg-editorial-bg/40 backdrop-blur-sm p-2 border border-editorial-text/10 rounded-xl">
             <div className="text-[7px] uppercase tracking-[0.4em] font-bold text-brand-primary mb-0.5 border-b border-editorial-text/10 pb-0.5 flex items-center gap-1.5">
