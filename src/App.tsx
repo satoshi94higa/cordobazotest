@@ -3,7 +3,7 @@ import { LeafletMap } from './components/LeafletMap';
 import { PhotoSlider } from './components/PhotoSlider';
 import { NILO_POINTS, NiloPoint } from './data';
 import { motion, AnimatePresence } from 'motion/react';
-import { X, Info, Layers, MapPin, HelpCircle, ChevronDown, ChevronUp, RotateCcw } from 'lucide-react';
+import { X, Info, MapPin, HelpCircle, ChevronDown, ChevronUp, RotateCcw } from 'lucide-react';
 
 const pointsSorted = [...NILO_POINTS].sort((a, b) => a.order - b.order);
 const preloadedImages = new Set<string>();
@@ -107,41 +107,33 @@ export default function App() {
 
   return (
     <div className="relative w-screen h-screen bg-editorial-bg text-editorial-text overflow-hidden font-sans">
-      {/* Background Grid Pattern */}
-      <div className="absolute inset-0 pointer-events-none opacity-[0.05]" 
-           style={{ backgroundImage: 'radial-gradient(#1A1A1A 1px, transparent 1px)', backgroundSize: '32px 32px' }} 
-      />
-
       {/* Header & Top Controls */}
       {!isMobile ? (
         <header className="absolute top-0 left-0 right-0 z-[1000] p-4 md:p-6 flex justify-between items-start pointer-events-none">
-          {/* Left Side: Unified Editorial Panel & Collapsible Index */}
+          {/* Left Side: Solid Archival Paper Panel & Index */}
           <div className="flex flex-col gap-2.5 items-start w-72 md:w-80">
-            <div className="pointer-events-auto w-full bg-editorial-bg/95 backdrop-blur-md p-4 md:p-5 border border-editorial-text/15 rounded-xl shadow-md">
-              <div className="text-[9px] md:text-[10px] uppercase tracking-[0.28em] font-bold text-brand-primary mb-1.5">
-                Mapa interactivo
-              </div>
+            <div className="pointer-events-auto w-full bg-editorial-bg p-4 md:p-5 border border-editorial-text rounded-[2px] shadow-[4px_4px_0px_rgba(20,20,19,0.14)]">
               <h1 className="text-base md:text-lg font-black uppercase tracking-tight leading-snug mb-2.5 font-display">
                 Lo que vuelve a mirarnos. <span className="text-brand-primary">El Cordobazo en la lente de Nilo Silvestrone</span>
               </h1>
-              <div className="h-0.5 w-14 bg-brand-primary mb-3" />
-              <p className="text-[11px] text-editorial-text/80 leading-relaxed mb-1.5">
-                Tocá los puntos georreferenciados para comparar las fotos de 1969 con imágenes actuales del lugar, o recorré el índice del archivo.
+              <div className="h-px w-full bg-editorial-text/20 mb-3" />
+              <p className="text-xs text-editorial-text/85 leading-relaxed font-serif mb-2">
+                Tocá los puntos en el mapa para comparar las fotografías de 1969 con vistas actuales del mismo lugar.
               </p>
               <p className="text-[11px] font-bold text-brand-primary leading-snug">
-                Ingresá a la Exploración Inmersiva para pantalla completa.
+                Abrí la Exploración Inmersiva para ver las láminas a pantalla completa.
               </p>
             </div>
 
             {/* Collapsible Archive Index List */}
-            <div className="pointer-events-auto w-full flex flex-col bg-editorial-bg/95 backdrop-blur-md border border-editorial-text/15 rounded-xl shadow-md overflow-hidden">
+            <div className="pointer-events-auto w-full flex flex-col bg-editorial-bg border border-editorial-text rounded-[2px] shadow-[4px_4px_0px_rgba(20,20,19,0.14)] overflow-hidden">
               <button
                 onClick={() => setIsIndexCollapsed(!isIndexCollapsed)}
-                className="w-full px-4 py-2.5 flex items-center justify-between text-left border-b border-editorial-text/10 hover:bg-black/5 transition-colors cursor-pointer"
+                className="w-full px-4 py-2.5 flex items-center justify-between text-left border-b border-editorial-text/20 hover:bg-editorial-text/5 transition-colors cursor-pointer"
               >
-                <div className="flex items-center gap-2 text-[10px] uppercase tracking-[0.25em] font-bold text-brand-primary">
-                  <MapPin size={12} />
-                  <span>Índice del archivo ({pointsSorted.length})</span>
+                <div className="flex items-center gap-2 text-[10px] uppercase tracking-[0.14em] font-mono font-bold text-editorial-text">
+                  <MapPin size={12} className="text-brand-primary" />
+                  <span>Índice · {pointsSorted.length} láminas</span>
                 </div>
                 {isIndexCollapsed ? (
                   <ChevronDown size={14} className="text-editorial-text/60" />
@@ -151,7 +143,7 @@ export default function App() {
               </button>
 
               {!isIndexCollapsed && (
-                <div className="flex flex-col gap-1 max-h-[42vh] overflow-y-auto p-2 custom-scrollbar">
+                <div className="flex flex-col divide-y divide-editorial-text/10 max-h-[42vh] overflow-y-auto custom-scrollbar">
                   {pointsSorted.map((point) => {
                     const isActive = selectedPoint?.id === point.id;
                     return (
@@ -161,23 +153,23 @@ export default function App() {
                           setSelectedPoint(point);
                           setFocusedPointId(point.id);
                         }}
-                        className={`group flex items-center gap-2.5 px-2.5 py-2 text-left transition-all border rounded-lg ${
+                        className={`group flex items-center gap-3 px-3.5 py-2 text-left transition-colors ${
                           isActive
-                            ? "bg-editorial-text text-white border-editorial-text shadow-sm"
-                            : "bg-white/80 border-editorial-text/10 hover:border-brand-primary/40 hover:bg-white"
+                            ? "bg-editorial-text text-editorial-bg"
+                            : "bg-editorial-bg hover:bg-editorial-text/5 text-editorial-text"
                         }`}
                       >
                         <span
-                          className={`w-5 h-5 rounded-full flex items-center justify-center font-mono text-[10px] font-bold flex-shrink-0 transition-colors ${
+                          className={`font-mono text-[10px] font-bold flex-shrink-0 ${
                             isActive
-                              ? "bg-brand-primary text-white"
-                              : "bg-brand-primary/15 text-brand-primary group-hover:bg-brand-primary group-hover:text-white"
+                              ? "text-brand-primary"
+                              : "text-editorial-text/50 group-hover:text-brand-primary"
                           }`}
                         >
                           {point.order.toString().padStart(2, '0')}
                         </span>
                         <div className="flex-1 min-w-0">
-                          <h4 className="text-[11px] font-bold uppercase tracking-wider leading-tight truncate">
+                          <h4 className="text-[11px] font-bold uppercase tracking-wide leading-tight truncate">
                             {point.title}
                           </h4>
                         </div>
@@ -194,23 +186,23 @@ export default function App() {
             <div className="flex gap-2 pointer-events-auto">
               <button
                 onClick={handleResetOverview}
-                className="flex items-center gap-2 px-3.5 h-10 bg-editorial-bg/95 backdrop-blur-md border border-editorial-text/20 hover:bg-editorial-text hover:text-white transition-all shadow-lg group rounded-lg cursor-pointer"
+                className="flex items-center gap-2 px-3.5 h-10 bg-editorial-bg border border-editorial-text hover:bg-editorial-text hover:text-editorial-bg transition-colors shadow-[3px_3px_0px_rgba(20,20,19,0.12)] group rounded-[2px] cursor-pointer"
                 title="Centrar vista general del mapa"
               >
-                <RotateCcw size={13} className="text-brand-primary group-hover:text-white transition-colors" />
-                <span className="text-[10px] font-bold uppercase tracking-wider">Vista general</span>
+                <RotateCcw size={13} className="text-brand-primary group-hover:text-editorial-bg transition-colors" />
+                <span className="text-[10px] font-bold uppercase tracking-[0.1em]">Vista general</span>
               </button>
               <button 
                 onClick={() => setShowAbout(true)}
-                className="flex items-center gap-2 px-4 h-10 bg-editorial-bg/95 backdrop-blur-md border border-editorial-text/20 hover:bg-editorial-text hover:text-white transition-all shadow-lg group rounded-lg cursor-pointer"
+                className="flex items-center gap-2 px-4 h-10 bg-editorial-bg border border-editorial-text hover:bg-editorial-text hover:text-editorial-bg transition-colors shadow-[3px_3px_0px_rgba(20,20,19,0.12)] group rounded-[2px] cursor-pointer"
                 title="Sobre el proyecto"
               >
-                <Info size={14} className="text-brand-primary group-hover:text-white transition-colors" />
-                <span className="text-[10px] font-bold uppercase tracking-wider">Sobre el proyecto</span>
+                <Info size={14} className="text-brand-primary group-hover:text-editorial-bg transition-colors" />
+                <span className="text-[10px] font-bold uppercase tracking-[0.1em]">Sobre el proyecto</span>
               </button>
               <button 
                 onClick={() => setShowInstructions(!showInstructions)}
-                className="w-10 h-10 bg-editorial-bg/95 backdrop-blur-md border border-editorial-text/20 flex items-center justify-center hover:bg-editorial-text hover:text-white transition-all shadow-lg rounded-lg cursor-pointer"
+                className="w-10 h-10 bg-editorial-bg border border-editorial-text flex items-center justify-center hover:bg-editorial-text hover:text-editorial-bg transition-colors shadow-[3px_3px_0px_rgba(20,20,19,0.12)] rounded-[2px] cursor-pointer"
                 title="Guía de uso"
               >
                 <HelpCircle size={15} />
@@ -417,43 +409,42 @@ export default function App() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="absolute inset-0 z-[3000] bg-black/40 backdrop-blur-sm flex items-center justify-center p-6"
+            className="absolute inset-0 z-[3000] bg-black/50 flex items-center justify-center p-6"
             onClick={() => setShowInstructions(false)}
           >
             <motion.div 
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
-              className="bg-editorial-bg max-w-lg w-full rounded-2xl overflow-hidden shadow-2xl border border-editorial-text/10"
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 8 }}
+              className="bg-editorial-bg max-w-lg w-full rounded-[2px] overflow-hidden shadow-[6px_6px_0px_rgba(20,20,19,0.25)] border border-editorial-text"
               onClick={e => e.stopPropagation()}
             >
-              <div className="bg-editorial-text p-6 text-white text-center">
-                <h3 className="text-lg font-bold font-display uppercase tracking-tight">Guía de Uso</h3>
-                <p className="text-[8px] uppercase tracking-[0.3em] opacity-50 mt-1">Mapa interactivo</p>
+              <div className="bg-editorial-text px-6 py-5 text-editorial-bg border-b border-editorial-text">
+                <h3 className="text-base font-bold font-display uppercase tracking-tight">Guía de Uso</h3>
               </div>
 
-              <div className="p-8 space-y-6">
+              <div className="p-7 space-y-6">
                 <div className="space-y-4">
                   <div className="flex gap-4">
-                    <div className="w-6 h-6 rounded-full bg-brand-primary text-white flex items-center justify-center flex-shrink-0 font-bold text-xs">1</div>
+                    <div className="w-6 h-6 rounded-[2px] bg-brand-primary text-editorial-bg flex items-center justify-center flex-shrink-0 font-mono font-bold text-xs">1</div>
                     <div>
-                      <h3 className="font-bold uppercase tracking-widest text-[10px] mb-1">Navegación</h3>
-                      <p className="text-xs opacity-70 leading-relaxed italic">Explora el mapa y selecciona los puntos rojos para abrir la ventana de comparación.</p>
+                      <h3 className="font-bold uppercase tracking-[0.1em] text-[11px] mb-1">Navegación</h3>
+                      <p className="text-sm text-editorial-text/80 leading-relaxed font-serif">Explorá el mapa o el índice lateral para abrir cada lámina comparativa.</p>
                     </div>
                   </div>
                   
                   <div className="flex gap-4">
-                    <div className="w-6 h-6 rounded-full bg-brand-primary text-white flex items-center justify-center flex-shrink-0 font-bold text-xs">2</div>
+                    <div className="w-6 h-6 rounded-[2px] bg-brand-primary text-editorial-bg flex items-center justify-center flex-shrink-0 font-mono font-bold text-xs">2</div>
                     <div>
-                      <h3 className="font-bold uppercase tracking-widest text-[10px] mb-1">Inmersión</h3>
-                      <p className="text-xs opacity-70 leading-relaxed italic">Usa el botón "Exploración Inmersiva" para ver las fotos en pantalla completa y navegar entre puntos.</p>
+                      <h3 className="font-bold uppercase tracking-[0.1em] text-[11px] mb-1">Exploración Inmersiva</h3>
+                      <p className="text-sm text-editorial-text/80 leading-relaxed font-serif">Ampliá las fotografías a pantalla completa y navegá entre los 13 puntos con las flechas o el teclado.</p>
                     </div>
                   </div>
                 </div>
 
                 <button 
                   onClick={() => setShowInstructions(false)}
-                  className="w-full bg-editorial-text text-white py-4 rounded-xl font-bold uppercase tracking-[0.3em] text-[10px] hover:bg-brand-primary transition-all active:scale-95 shadow-xl"
+                  className="w-full bg-editorial-text text-editorial-bg py-3.5 rounded-[2px] font-bold uppercase tracking-[0.14em] text-[11px] hover:bg-brand-primary transition-colors cursor-pointer"
                 >
                   Comenzar Recorrido
                 </button>
@@ -463,14 +454,6 @@ export default function App() {
         )}
       </AnimatePresence>
 
-      {/* Project Branding Footer */}
-      <footer className="absolute bottom-6 left-6 z-[1000] pointer-events-none hidden md:block">
-        <div className="opacity-40 flex items-center gap-2">
-          <Layers size={14} />
-          <span className="text-[10px] font-mono uppercase tracking-widest">Open Street Maps Data Layer</span>
-        </div>
-      </footer>
-
       {/* About Project Modal */}
       <AnimatePresence>
         {showAbout && (
@@ -478,44 +461,40 @@ export default function App() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="absolute inset-0 z-[4000] bg-black/60 backdrop-blur-md flex items-center justify-center p-6"
+            className="absolute inset-0 z-[4000] bg-black/55 flex items-center justify-center p-6"
             onClick={() => setShowAbout(false)}
           >
             <motion.div 
-              initial={{ scale: 0.9, y: 20, opacity: 0 }}
-              animate={{ scale: 1, y: 0, opacity: 1 }}
-              exit={{ scale: 0.9, y: 20, opacity: 0 }}
-              className="bg-editorial-bg max-w-xl w-full rounded-xl md:rounded-2xl overflow-hidden shadow-[0_32px_64px_rgba(0,0,0,0.5)] border border-editorial-text/10"
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 8 }}
+              className="bg-editorial-bg max-w-xl w-full rounded-[2px] overflow-hidden shadow-[6px_6px_0px_rgba(20,20,19,0.28)] border border-editorial-text"
               onClick={e => e.stopPropagation()}
             >
-              <div className="relative h-24 md:h-32 bg-editorial-text flex items-center justify-center overflow-hidden">
-                <div className="absolute inset-0 opacity-20" style={{ backgroundImage: 'radial-gradient(white 1px, transparent 1px)', backgroundSize: '16px 16px' }} />
-                <h2 className="relative text-white text-lg md:text-xl font-black tracking-tight font-display uppercase px-6 text-center leading-tight">
+              <div className="bg-editorial-text px-6 py-6 border-b border-editorial-text">
+                <h2 className="text-editorial-bg text-lg md:text-xl font-black tracking-tight font-display uppercase leading-tight">
                   Lo que vuelve a mirarnos. <span className="text-brand-primary">El Cordobazo en la lente de Nilo Silvestrone</span>
                 </h2>
               </div>
               
-              <div className="p-5 md:p-8 space-y-3 md:space-y-5">
-                <div className="flex flex-col gap-1">
-                  <div className="text-sm md:text-base font-serif text-editorial-text leading-relaxed">
-                    Estas fotografías no solo documentan un acontecimiento de 1969, sino que condensan una experiencia colectiva de conflicto, organización y ruptura que continúa interrogando nuestras formas actuales de vida política y social.
-                  </div>
-                </div>
-
-                <div className="h-px bg-editorial-text/10" />
-
-                <p className="text-[10px] md:text-xs opacity-70 leading-relaxed">
-                  Este mapa interactivo forma parte de una muestra se exhiben fotos emblemáticas de Nilo Silvestrone, que publicaron en 1969 las revistas Siete Días y Paris Match y más de 40 fotos inéditas, cuyos negativos fueron compartidos por la familia del fotógrafo.
+              <div className="p-6 md:p-8 space-y-4">
+                <p className="text-base md:text-lg font-serif text-editorial-text leading-relaxed">
+                  Estas fotografías no solo documentan un acontecimiento de 1969, sino que condensan una experiencia colectiva de conflicto, organización y ruptura que continúa interrogando nuestras formas actuales de vida política y social.
                 </p>
 
-                <div className="pt-2 md:pt-4 flex justify-between items-center">
-                  <div className="flex flex-col">
-                    <span className="text-[8px] md:text-[9px] uppercase tracking-widest font-bold opacity-30">Versión del Archivo</span>
-                    <span className="font-mono text-[9px] md:text-[10px] font-bold">ARC-2024.v1</span>
-                  </div>
+                <div className="h-px bg-editorial-text/15" />
+
+                <p className="text-xs md:text-sm text-editorial-text/75 leading-relaxed font-serif">
+                  Este mapa interactivo forma parte de una muestra donde se exhiben fotos emblemáticas de Nilo Silvestrone publicadas en 1969 por las revistas Siete Días y Paris Match, junto a negativos inéditos compartidos por la familia del fotógrafo.
+                </p>
+
+                <div className="pt-2 flex justify-between items-center border-t border-editorial-text/15">
+                  <span className="font-mono text-[10px] uppercase tracking-[0.12em] text-editorial-text/50">
+                    Córdoba, Argentina · Mayo de 1969
+                  </span>
                   <button 
                     onClick={() => setShowAbout(false)}
-                    className="bg-editorial-text text-white px-6 md:px-8 py-2 md:py-3 rounded-full font-bold text-[10px] md:text-xs uppercase tracking-widest hover:bg-brand-primary transition-all active:scale-95"
+                    className="bg-editorial-text text-editorial-bg px-6 py-2.5 rounded-[2px] font-bold text-[11px] uppercase tracking-[0.14em] hover:bg-brand-primary transition-colors cursor-pointer"
                   >
                     Cerrar
                   </button>

@@ -637,8 +637,8 @@ export function PhotoSlider({
         <h2 className="text-xs md:text-sm font-bold tracking-tight font-display uppercase leading-snug text-editorial-text">
           {title}
         </h2>
-        <div className="h-0.5 w-8 bg-brand-primary" />
-        <p className="text-[11px] md:text-xs leading-relaxed text-editorial-text/80 font-serif italic line-clamp-3">
+        <div className="h-px w-10 bg-brand-primary" />
+        <p className="text-xs leading-relaxed text-editorial-text/85 font-serif line-clamp-3">
           {description}
         </p>
       </div>
@@ -646,10 +646,10 @@ export function PhotoSlider({
       <div className="px-0.5 mt-1 flex flex-col gap-2">
         <button 
           onClick={() => setIsFullSize(true)}
-          className="w-full h-10 bg-brand-primary text-white rounded-lg flex items-center justify-center gap-2.5 shadow-lg hover:bg-editorial-text transition-all active:scale-[0.98] group cursor-pointer"
+          className="w-full h-10 bg-editorial-text text-editorial-bg rounded-[2px] border border-editorial-text flex items-center justify-center gap-2.5 hover:bg-brand-primary hover:border-brand-primary transition-colors group cursor-pointer"
         >
-          <Maximize2 size={14} className="opacity-90 group-hover:scale-110 transition-transform" />
-          <span className="text-[10px] uppercase font-bold tracking-[0.22em]">Exploración Inmersiva</span>
+          <Maximize2 size={13} className="opacity-85" />
+          <span className="text-[10px] uppercase font-bold tracking-[0.16em]">Exploración Inmersiva</span>
         </button>
       </div>
 
@@ -806,173 +806,168 @@ export function PhotoSlider({
 
                 {/* Info Area - Sidebar */}
               <div className={cn(
-                "fixed inset-y-0 right-0 z-[200] w-[85%] max-w-[320px] md:w-[460px] lg:w-[500px] md:max-w-none md:flex bg-editorial-bg overflow-hidden flex-col border-l border-white/10 shadow-2xl transition-transform duration-300 ease-in-out md:relative md:translate-x-0",
+                "fixed inset-y-0 right-0 z-[200] w-[85%] max-w-[320px] md:w-[420px] lg:w-[460px] md:max-w-none md:flex bg-editorial-bg overflow-hidden flex-col border-l border-editorial-text/20 transition-transform duration-300 ease-in-out md:relative md:translate-x-0",
                 showMobileSidebar ? "translate-x-0 flex" : "translate-x-full md:translate-x-0 hidden"
               )}>
                 {/* Mobile Close Handle */}
                 <button 
                   onClick={() => setShowMobileSidebar(false)}
-                  className="md:hidden absolute top-4 right-4 w-10 h-10 bg-black/5 hover:bg-black/10 rounded-full flex items-center justify-center text-editorial-text/40 transition-colors z-30"
+                  className="md:hidden absolute top-4 right-4 w-10 h-10 bg-black/5 hover:bg-black/10 rounded-[2px] flex items-center justify-center text-editorial-text/60 transition-colors z-30"
                 >
                   <X size={20} />
                 </button>
 
-                {/* Flex-1 text details - NOW AT THE TOP so they fill upper space */}
+                {/* Flex-1 text details */}
                 <div className="flex-1 overflow-y-auto p-6 md:p-8 custom-scrollbar landscape:p-4 landscape:pt-10">
-                  <div className="flex items-center justify-between gap-2 mb-4 landscape:mb-3">
-                    <div className="flex flex-col gap-1">
-                      <div className="text-[10px] uppercase tracking-[0.35em] font-bold text-brand-primary">Info Inmersiva</div>
-                      <div className="text-[10px] opacity-40 font-mono uppercase tracking-widest leading-none mt-1">Archivo Nilo Silvestrone</div>
-                    </div>
-                    {pointOrder !== undefined && (
-                      <span className="px-2.5 py-1 rounded-full bg-brand-primary/10 text-brand-primary font-mono text-xs font-bold border border-brand-primary/20">
-                        {pointOrder.toString().padStart(2, '0')} / {totalPoints.toString().padStart(2, '0')}
+                  {pointOrder !== undefined && (
+                    <div className="flex items-center justify-between border-b border-editorial-text/15 pb-3 mb-5">
+                      <span className="font-mono text-xs font-bold uppercase tracking-[0.12em] text-brand-primary">
+                        Lámina {pointOrder.toString().padStart(2, '0')} / {totalPoints.toString().padStart(2, '0')}
                       </span>
-                    )}
-                  </div>
+                      <span className="font-mono text-[10px] uppercase tracking-[0.1em] text-editorial-text/50">
+                        Nilo Silvestrone · 1969
+                      </span>
+                    </div>
+                  )}
 
                   <div className="space-y-4 landscape:space-y-3">
                     <div>
-                      <h2 className="text-xl md:text-2xl lg:text-3xl font-bold tracking-tight mb-2 font-display uppercase leading-tight text-editorial-text landscape:text-lg">
+                      <h2 className="text-xl md:text-2xl font-bold tracking-tight mb-3 font-display uppercase leading-tight text-editorial-text landscape:text-lg">
                         {title}
                       </h2>
-                      <div className="h-1 w-12 bg-brand-primary" />
+                      <div className="h-px w-12 bg-brand-primary" />
                     </div>
 
-                    <p className="text-sm md:text-base lg:text-lg leading-relaxed text-editorial-text font-serif opacity-90 landscape:text-xs">
+                    <p className="text-base md:text-lg leading-relaxed text-editorial-text font-serif landscape:text-xs">
                       {description}
                     </p>
 
-                    {/* Giant Screen Optimized Controls - positioned directly underneath explanation text */}
-                    <div className="hidden md:flex flex-col gap-6 pt-6 pb-2 border-t border-editorial-text/10 mt-6 select-none animate-fadeIn">
+                    {/* Clean Architectural Controls */}
+                    <div className="hidden md:flex flex-col gap-5 pt-6 pb-2 border-t border-editorial-text/15 mt-6 select-none">
                       
-                      {/* 1. MODO DE VISIÓN (Vision Modes) - Giant buttons grouped together */}
+                      {/* 1. MODO DE VISIÓN */}
                       {hasBothPhotos && (
-                        <div className="space-y-3">
-                          <span className="text-xs font-bold uppercase tracking-[0.25em] text-editorial-text/60">
-                            Modo de Visión
+                        <div className="space-y-2">
+                          <span className="text-[10px] font-mono font-bold uppercase tracking-[0.14em] text-editorial-text/60">
+                            Comparación
                           </span>
-                          <div className="grid grid-cols-3 gap-3">
+                          <div className="grid grid-cols-3 border border-editorial-text/25 divide-x divide-editorial-text/20 rounded-[2px] overflow-hidden bg-white/50">
                             <button 
                               onClick={(e) => { e.stopPropagation(); setViewMode('slide'); }}
                               className={cn(
-                                "h-20 lg:h-24 rounded-2xl flex flex-col items-center justify-center gap-2 transition-all cursor-pointer font-bold border text-xs uppercase tracking-wider",
+                                "h-11 flex items-center justify-center gap-2 transition-colors cursor-pointer text-[11px] font-bold uppercase tracking-[0.08em]",
                                 viewMode === 'slide'
-                                  ? "bg-brand-primary text-white border-transparent shadow-lg scale-[1.02]"
-                                  : "bg-white text-editorial-text border-editorial-text/10 hover:bg-gray-50 active:scale-[0.98]"
+                                  ? "bg-editorial-text text-editorial-bg"
+                                  : "text-editorial-text hover:bg-editorial-text/5"
                               )}
                             >
-                              <ArrowLeftRight size={22} className={viewMode === 'slide' ? "text-white" : "text-brand-primary"} />
-                              <span className="text-[11px] lg:text-xs font-bold tracking-wider">Deslizar</span>
+                              <ArrowLeftRight size={13} />
+                              <span>Deslizar</span>
                             </button>
                             
                             <button 
                               onClick={(e) => { e.stopPropagation(); setViewMode('side-by-side'); }}
                               className={cn(
-                                "h-20 lg:h-24 rounded-2xl flex flex-col items-center justify-center gap-2 transition-all cursor-pointer font-bold border text-xs uppercase tracking-wider",
+                                "h-11 flex items-center justify-center gap-2 transition-colors cursor-pointer text-[11px] font-bold uppercase tracking-[0.08em]",
                                 viewMode === 'side-by-side'
-                                  ? "bg-brand-primary text-white border-transparent shadow-lg scale-[1.02]"
-                                  : "bg-white text-editorial-text border-editorial-text/10 hover:bg-gray-50 active:scale-[0.98]"
+                                  ? "bg-editorial-text text-editorial-bg"
+                                  : "text-editorial-text hover:bg-editorial-text/5"
                               )}
                             >
-                              <Columns size={22} className={viewMode === 'side-by-side' ? "text-white" : "text-brand-primary"} />
-                              <span className="text-[11px] lg:text-xs font-bold tracking-wider">Lados</span>
+                              <Columns size={13} />
+                              <span>Lados</span>
                             </button>
 
                             <button 
                               onClick={(e) => { e.stopPropagation(); setViewMode('toggle'); }}
                               className={cn(
-                                "h-20 lg:h-24 rounded-2xl flex flex-col items-center justify-center gap-2 transition-all cursor-pointer font-bold border text-xs uppercase tracking-wider",
+                                "h-11 flex items-center justify-center gap-2 transition-colors cursor-pointer text-[11px] font-bold uppercase tracking-[0.08em]",
                                 viewMode === 'toggle'
-                                  ? "bg-brand-primary text-white border-transparent shadow-lg scale-[1.02]"
-                                  : "bg-white text-editorial-text border-editorial-text/10 hover:bg-gray-50 active:scale-[0.98]"
+                                  ? "bg-editorial-text text-editorial-bg"
+                                  : "text-editorial-text hover:bg-editorial-text/5"
                               )}
                             >
-                              <Layers size={22} className={viewMode === 'toggle' ? "text-white" : "text-brand-primary"} />
-                              <span className="text-[11px] lg:text-xs font-bold tracking-wider">Alternar</span>
+                              <Layers size={13} />
+                              <span>Alternar</span>
                             </button>
                           </div>
                         </div>
                       )}
 
-                      {/* 2. BOTONES DE AÑOS - Massive and interactive. If a user clicks a year in any mode, we switch to split/toggle mode for instant feedback! */}
+                      {/* 2. REGISTRO TEMPORAL */}
                       {hasBothPhotos && (
-                        <div className="space-y-3">
-                          <span className="text-xs font-bold uppercase tracking-[0.25em] text-editorial-text/60">
-                            Año Seleccionado
+                        <div className="space-y-2">
+                          <span className="text-[10px] font-mono font-bold uppercase tracking-[0.14em] text-editorial-text/60">
+                            Registro
                           </span>
-                          <div className="grid grid-cols-2 gap-4">
+                          <div className="grid grid-cols-2 border border-editorial-text/25 divide-x divide-editorial-text/20 rounded-[2px] overflow-hidden bg-white/50">
                             <button 
                               onClick={() => { setActiveToggle('hist'); setViewMode('toggle'); }}
                               className={cn(
-                                "h-20 lg:h-24 rounded-2xl flex flex-col items-center justify-center gap-1.5 transition-all cursor-pointer font-bold border text-base uppercase tracking-widest",
+                                "h-11 flex items-center justify-center gap-2 transition-colors cursor-pointer text-xs font-bold uppercase tracking-[0.1em]",
                                 (viewMode === 'toggle' && activeToggle === 'hist')
-                                  ? "bg-brand-primary text-white border-transparent shadow-lg scale-[1.02]"
-                                  : "bg-white text-editorial-text border-editorial-text/10 hover:bg-gray-50 active:scale-[0.98] opacity-85"
+                                  ? "bg-brand-primary text-editorial-bg"
+                                  : "text-editorial-text hover:bg-editorial-text/5"
                               )}
                             >
-                              <span className="text-xl lg:text-2xl font-display font-black">1969</span>
-                              <span className="text-[10px] lg:text-[11px] uppercase tracking-wider opacity-70 font-bold">Foto Histórica</span>
+                              <span>1969 · Archivo</span>
                             </button>
                             
                             <button 
                               onClick={() => { setActiveToggle('curr'); setViewMode('toggle'); }}
                               className={cn(
-                                "h-20 lg:h-24 rounded-2xl flex flex-col items-center justify-center gap-1.5 transition-all cursor-pointer font-bold border text-base uppercase tracking-widest",
+                                "h-11 flex items-center justify-center gap-2 transition-colors cursor-pointer text-xs font-bold uppercase tracking-[0.1em]",
                                 (viewMode === 'toggle' && activeToggle === 'curr')
-                                  ? "bg-brand-primary text-white border-transparent shadow-lg scale-[1.02]"
-                                  : "bg-white text-editorial-text border-editorial-text/10 hover:bg-gray-50 active:scale-[0.98] opacity-85"
+                                  ? "bg-brand-primary text-editorial-bg"
+                                  : "text-editorial-text hover:bg-editorial-text/5"
                               )}
                             >
-                              <span className="text-xl lg:text-2xl font-display font-black">Hoy</span>
-                              <span className="text-[10px] lg:text-[11px] uppercase tracking-wider opacity-70 font-bold">Foto Actual</span>
+                              <span>Actualidad</span>
                             </button>
                           </div>
                         </div>
                       )}
 
-                      <div className="border-t border-editorial-text/10 my-1" />
+                      <div className="border-t border-editorial-text/15 my-1" />
 
                       {/* 3. PRIMARY ACTION & NAVIGATION */}
-                      <div className="space-y-4">
-                        {/* Back to Map Button - scaled up for high readability & touch friendliness */}
-                        <button 
-                          onClick={() => setIsFullSize(false)}
-                          className="w-full h-18 lg:h-22 bg-brand-primary text-white hover:bg-editorial-text transition-all active:scale-[0.98] group cursor-pointer flex items-center justify-center gap-4 shadow-xl font-bold border border-transparent rounded-2xl"
-                        >
-                          <LocateFixed size={24} className="group-hover:scale-110 transition-transform text-white" />
-                          <span className="text-sm lg:text-base uppercase font-extrabold tracking-[0.3em]">Volver al Mapa</span>
-                        </button>
-
-                        {/* Navigation controls */}
-                        <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2.5">
+                        <div className="grid grid-cols-2 gap-2.5">
                           <button 
                             onClick={onPrev}
                             disabled={!hasPrev}
                             className={cn(
-                              "h-16 lg:h-20 rounded-2xl flex items-center justify-center gap-3 font-bold text-xs lg:text-sm uppercase tracking-widest border transition-all cursor-pointer",
+                              "h-11 rounded-[2px] flex items-center justify-center gap-2 font-bold text-[11px] uppercase tracking-[0.12em] border transition-colors cursor-pointer",
                               hasPrev 
-                                ? "bg-white text-editorial-text border-editorial-text/20 shadow-lg hover:bg-gray-50 active:scale-[0.98] hover:border-editorial-text" 
-                                : "opacity-20 cursor-not-allowed bg-black/5"
+                                ? "bg-white/60 text-editorial-text border-editorial-text/25 hover:bg-editorial-text hover:text-editorial-bg" 
+                                : "opacity-25 cursor-not-allowed border-editorial-text/15"
                             )}
                           >
-                            <ArrowLeftRight size={20} className="rotate-180 opacity-60" />
+                            <ArrowLeftRight size={14} className="rotate-180 opacity-70" />
                             Anterior
                           </button>
                           <button 
                             onClick={onNext}
                             disabled={!hasNext}
                             className={cn(
-                              "h-16 lg:h-20 rounded-2xl flex items-center justify-center gap-3 font-bold text-xs lg:text-sm uppercase tracking-widest border transition-all cursor-pointer",
+                              "h-11 rounded-[2px] flex items-center justify-center gap-2 font-bold text-[11px] uppercase tracking-[0.12em] border transition-colors cursor-pointer",
                               hasNext 
-                                ? "bg-white text-editorial-text border-editorial-text/20 shadow-lg hover:bg-gray-50 active:scale-[0.98] hover:border-editorial-text" 
-                                : "opacity-20 cursor-not-allowed bg-black/5"
+                                ? "bg-white/60 text-editorial-text border-editorial-text/25 hover:bg-editorial-text hover:text-editorial-bg" 
+                                : "opacity-25 cursor-not-allowed border-editorial-text/15"
                             )}
                           >
                             Siguiente
-                            <ArrowLeftRight size={20} className="opacity-60" />
+                            <ArrowLeftRight size={14} className="opacity-70" />
                           </button>
                         </div>
+
+                        <button 
+                          onClick={() => setIsFullSize(false)}
+                          className="w-full h-11 bg-editorial-text text-editorial-bg hover:bg-brand-primary transition-colors cursor-pointer flex items-center justify-center gap-2.5 font-bold rounded-[2px]"
+                        >
+                          <LocateFixed size={15} />
+                          <span className="text-[11px] uppercase font-bold tracking-[0.16em]">Volver al Mapa</span>
+                        </button>
                       </div>
                     </div>
 

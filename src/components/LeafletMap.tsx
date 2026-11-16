@@ -14,10 +14,9 @@ const getCustomIcon = (order: number, isSelected: boolean): L.DivIcon => {
     icon = L.divIcon({
       className: 'custom-marker',
       html: `<div class="flex items-center justify-center relative">
-               <div class="w-7 h-7 ${isSelected ? 'bg-editorial-text scale-110 shadow-2xl z-[1001]' : 'bg-brand-primary'} rounded-full border-2 border-white shadow-lg flex items-center justify-center transition-all duration-300">
-                 <span class="text-[10px] font-bold text-white font-mono">${order}</span>
+               <div class="w-7 h-7 ${isSelected ? 'bg-editorial-text ring-2 ring-brand-primary ring-offset-2 ring-offset-[#F3EFE6] z-[1001]' : 'bg-brand-primary hover:scale-105'} rounded-full border-[1.5px] border-[#F3EFE6] shadow-md flex items-center justify-center transition-transform duration-200">
+                 <span class="text-[10px] font-bold text-[#F3EFE6] font-mono">${order}</span>
                </div>
-               ${isSelected ? '<div class="absolute -inset-1 bg-brand-primary rounded-full animate-ping opacity-30"></div>' : ''}
              </div>`,
       iconSize: [28, 28],
       iconAnchor: [14, 14],
@@ -134,7 +133,7 @@ export const LeafletMap = memo(function LeafletMap({
         maxZoom={18}
         maxBounds={cordobaBounds}
         maxBoundsViscosity={1.0}
-        style={{ 
+          style={{ 
           position: 'absolute',
           top: 0,
           bottom: 0,
@@ -142,7 +141,7 @@ export const LeafletMap = memo(function LeafletMap({
           right: 0,
           height: '100%', 
           width: '100%',
-          backgroundColor: '#FBEFE4' // Warm paper-like background matching the editorial theme, instead of generic gray blocks
+          backgroundColor: '#F3EFE6'
         }}
         zoomControl={false}
         scrollWheelZoom={true}
@@ -168,9 +167,9 @@ export const LeafletMap = memo(function LeafletMap({
           <Polyline
             positions={centerRoutePositions}
             pathOptions={{
-              color: '#B91C1C',
-              weight: 2,
-              opacity: 0.35,
+              color: '#9B1B1B',
+              weight: 1.75,
+              opacity: 0.4,
               dashArray: '5, 7',
             }}
           />
@@ -179,8 +178,8 @@ export const LeafletMap = memo(function LeafletMap({
           <Polyline
             positions={renaultFeederPositions}
             pathOptions={{
-              color: '#B91C1C',
-              weight: 1.5,
+              color: '#9B1B1B',
+              weight: 1.25,
               opacity: 0.25,
               dashArray: '3, 8',
             }}
@@ -200,17 +199,17 @@ export const LeafletMap = memo(function LeafletMap({
               zIndexOffset={isSelected ? 1000 : 0}
             >
               <Tooltip direction="top" offset={[0, -12]} opacity={1} className="editorial-tooltip">
-                <div className="flex items-center gap-2.5 p-1.5 pr-3 bg-editorial-text text-white rounded-xl shadow-xl border border-white/15 max-w-[240px]">
+                <div className="flex items-center gap-2.5 p-1.5 pr-3 bg-editorial-bg text-editorial-text rounded-[2px] shadow-[3px_3px_0px_rgba(20,20,19,0.18)] border border-editorial-text max-w-[240px]">
                   <img
                     src={point.historicalPhoto}
                     alt={point.title}
-                    className="w-10 h-10 object-cover rounded-lg grayscale sepia-[0.2] border border-white/20 flex-shrink-0"
+                    className="w-10 h-10 object-cover rounded-[1px] grayscale sepia-[0.15] border border-editorial-text/20 flex-shrink-0"
                   />
                   <div className="min-w-0">
-                    <div className="text-[8px] font-mono uppercase tracking-[0.2em] text-brand-primary font-bold">
-                      Punto {point.order.toString().padStart(2, '0')}
+                    <div className="text-[9px] font-mono uppercase tracking-[0.12em] text-brand-primary font-bold">
+                      Lámina {point.order.toString().padStart(2, '0')}
                     </div>
-                    <div className="text-[10px] font-bold uppercase tracking-wider leading-tight truncate">
+                    <div className="text-[11px] font-bold uppercase tracking-wide leading-tight truncate">
                       {point.title}
                     </div>
                   </div>
@@ -230,12 +229,13 @@ export const LeafletMap = memo(function LeafletMap({
             offset={[0, -20]}
             maxWidth={520}
           >
-            <div className="bg-editorial-bg shadow-2xl rounded-xl overflow-hidden border border-editorial-text/15 flex flex-col w-[400px] md:w-[480px]">
-              <div className="px-3.5 py-2.5 border-b border-editorial-text/10 flex justify-between items-center bg-editorial-text text-white gap-2">
+            <div className="bg-editorial-bg shadow-[5px_5px_0px_rgba(20,20,19,0.2)] rounded-[2px] overflow-hidden border border-editorial-text flex flex-col w-[400px] md:w-[480px]">
+              <div className="px-3.5 py-2.5 border-b border-editorial-text/20 flex justify-between items-center bg-editorial-text text-editorial-bg gap-2">
                 <div className="flex items-center gap-2.5 min-w-0">
-                  <span className="px-2 py-0.5 rounded bg-brand-primary text-white font-mono text-[10px] font-bold tracking-wider flex-shrink-0">
-                    {selectedPoint.order.toString().padStart(2, '0')} / {points.length.toString().padStart(2, '0')}
+                  <span className="font-mono text-[10px] font-bold tracking-wider text-editorial-bg/70 flex-shrink-0">
+                    {selectedPoint.order.toString().padStart(2, '0')}/{points.length.toString().padStart(2, '0')}
                   </span>
+                  <span className="w-px h-3 bg-editorial-bg/25 flex-shrink-0" />
                   <h3 className="text-[11px] font-bold uppercase tracking-wider truncate">{selectedPoint.title}</h3>
                 </div>
                 <div className="flex items-center gap-1 flex-shrink-0">
@@ -245,8 +245,8 @@ export const LeafletMap = memo(function LeafletMap({
                       if (hasPrev && onPrev) onPrev();
                     }}
                     disabled={!hasPrev}
-                    className="w-7 h-7 hover:bg-white/15 disabled:opacity-25 disabled:cursor-not-allowed rounded-full flex items-center justify-center transition-colors cursor-pointer"
-                    title="Punto anterior"
+                    className="w-7 h-7 hover:bg-white/15 disabled:opacity-25 disabled:cursor-not-allowed rounded-[2px] flex items-center justify-center transition-colors cursor-pointer"
+                    title="Lámina anterior"
                   >
                     <ChevronLeft size={15} />
                   </button>
@@ -256,8 +256,8 @@ export const LeafletMap = memo(function LeafletMap({
                       if (hasNext && onNext) onNext();
                     }}
                     disabled={!hasNext}
-                    className="w-7 h-7 hover:bg-white/15 disabled:opacity-25 disabled:cursor-not-allowed rounded-full flex items-center justify-center transition-colors cursor-pointer"
-                    title="Punto siguiente"
+                    className="w-7 h-7 hover:bg-white/15 disabled:opacity-25 disabled:cursor-not-allowed rounded-[2px] flex items-center justify-center transition-colors cursor-pointer"
+                    title="Lámina siguiente"
                   >
                     <ChevronRight size={15} />
                   </button>
@@ -267,7 +267,7 @@ export const LeafletMap = memo(function LeafletMap({
                       e.stopPropagation();
                       onSelectPoint(null);
                     }}
-                    className="w-7 h-7 hover:bg-white/15 rounded-full flex items-center justify-center transition-colors cursor-pointer"
+                    className="w-7 h-7 hover:bg-white/15 rounded-[2px] flex items-center justify-center transition-colors cursor-pointer"
                     title="Cerrar"
                   >
                     <X size={15} />
@@ -275,7 +275,7 @@ export const LeafletMap = memo(function LeafletMap({
                 </div>
               </div>
 
-              <div className="p-3.5 animate-fade-in" onClick={(e) => e.stopPropagation()}>
+              <div className="p-3.5" onClick={(e) => e.stopPropagation()}>
                 <PhotoSlider 
                   historical={selectedPoint.historicalPhoto}
                   current={selectedPoint.currentPhoto}
@@ -291,7 +291,7 @@ export const LeafletMap = memo(function LeafletMap({
                   onPrev={onPrev || (() => {})}
                   hasNext={hasNext || false}
                   hasPrev={hasPrev || false}
-                  className="shadow-lg rounded-lg overflow-hidden flex-1"
+                  className="overflow-hidden flex-1"
                   isPopup={true}
                 />
               </div>

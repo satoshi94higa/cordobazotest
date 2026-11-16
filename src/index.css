@@ -3,9 +3,9 @@
 @import "leaflet/dist/leaflet.css";
 
 @theme {
-  --color-brand-primary: #B91C1C; /* Red 700 */
-  --color-editorial-bg: #FDFBF7;
-  --color-editorial-text: #1A1A1A;
+  --color-brand-primary: #9B1B1B; /* Archival Vermilion */
+  --color-editorial-bg: #F3EFE6; /* Warm Newsprint / Cotton Paper */
+  --color-editorial-text: #141413; /* Matte Charcoal Ink */
   --font-serif: "Newsreader", "Georgia", serif;
   --font-sans: "Outfit", "Inter", sans-serif;
   --font-display: "Archivo Black", sans-serif;
@@ -39,7 +39,7 @@
 }
 
 .editorial-tooltip.leaflet-tooltip-top::before {
-  border-top-color: #1A1A1A !important;
+  border-top-color: #141413 !important;
 }
 
 /* Leaflet Popup Customization */
@@ -47,7 +47,7 @@
   background: transparent !important;
   box-shadow: none !important;
   padding: 0 !important;
-  border-radius: 24px !important;
+  border-radius: 2px !important;
   overflow: hidden;
 }
 
