@@ -11,6 +11,16 @@
   --font-display: "Archivo Black", sans-serif;
 }
 
+/* Editorial map filter: neutralizes commercial POI colors so Cordobazo markers stand out */
+.leaflet-tile-pane {
+  filter: grayscale(85%) sepia(14%) contrast(98%) brightness(102%);
+}
+
+/* Smooth zoom transition curve for map tiles and markers */
+.leaflet-zoom-anim .leaflet-zoom-animated {
+  transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1) !important;
+}
+
 /* Leaflet Popup Customization */
 .editorial-popup .leaflet-popup-content-wrapper {
   background: transparent !important;

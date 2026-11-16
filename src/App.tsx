@@ -1,39 +1,109 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { LeafletMap } from './components/LeafletMap';
 import { PhotoSlider } from './components/PhotoSlider';
 import { NILO_POINTS, NiloPoint } from './data';
 import { motion, AnimatePresence } from 'motion/react';
-import { X, Info, Layers, MapPin, HelpCircle } from 'lucide-react';
+import { X, Info, Layers, MapPin, HelpCircle, ChevronDown, ChevronUp, RotateCcw } from 'lucide-react';
+
+const pointsSorted = [...NILO_POINTS].sort((a, b) => a.order - b.order);
+const preloadedImages = new Set<string>();
+
+function preloadPointPhotos(point: NiloPoint | undefined) {
+  if (!point) return;
+  for (const url of [point.historicalPhoto, point.currentPhoto]) {
+    if (url && !preloadedImages.has(url)) {
+      preloadedImages.add(url);
+      const img = new Image();
+      img.decoding = 'async';
+      img.src = url;
+    }
+  }
+}
 
 export default function App() {
   const [selectedPoint, setSelectedPoint] = useState<NiloPoint | null>(null);
   const [focusedPointId, setFocusedPointId] = useState<string | null>(null);
   const [showInstructions, setShowInstructions] = useState(false);
   const [showAbout, setShowAbout] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
+  const [isMobile, setIsMobile] = useState(() =>
+    typeof window !== 'undefined' ? window.matchMedia('(max-width: 767px)').matches : false
+  );
   const [showMobileIndex, setShowMobileIndex] = useState(false);
+  const [isIndexCollapsed, setIsIndexCollapsed] = useState(false);
+  const [resetViewSignal, setResetViewSignal] = useState(0);
 
-  useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768);
-    };
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
+  const handleResetOverview = useCallback(() => {
+    setSelectedPoint(null);
+    setFocusedPointId(null);
+    setShowInstructions(false);
+    setShowAbout(false);
+    setShowMobileIndex(false);
+    setResetViewSignal(s => s + 1);
   }, []);
 
-  const pointsSorted = [...NILO_POINTS].sort((a, b) => a.order - b.order);
+  // Kiosk inactivity auto-reset (3 minutes without user interaction)
+  useEffect(() => {
+    const INACTIVITY_MS = 180_000;
+    let timer: ReturnType<typeof setTimeout>;
+    const resetTimer = () => {
+      clearTimeout(timer);
+      timer = setTimeout(() => {
+        handleResetOverview();
+      }, INACTIVITY_MS);
+    };
+    resetTimer();
+    const events = ['pointerdown', 'keydown', 'wheel', 'touchstart'] as const;
+    events.forEach(ev => window.addEventListener(ev, resetTimer, { passive: true }));
+    return () => {
+      clearTimeout(timer);
+      events.forEach(ev => window.removeEventListener(ev, resetTimer));
+    };
+  }, [handleResetOverview]);
+
+  useEffect(() => {
+    const mql = window.matchMedia('(max-width: 767px)');
+    const onChange = (e: MediaQueryListEvent) => setIsMobile(e.matches);
+    setIsMobile(mql.matches);
+    mql.addEventListener('change', onChange);
+    return () => mql.removeEventListener('change', onChange);
+  }, []);
+
   const currentIndex = selectedPoint ? pointsSorted.findIndex(p => p.id === selectedPoint.id) : -1;
-  const hasNext = currentIndex < pointsSorted.length - 1;
+  const hasNext = currentIndex >= 0 && currentIndex < pointsSorted.length - 1;
   const hasPrev = currentIndex > 0;
 
-  const handleNext = () => {
-    if (hasNext) setSelectedPoint(pointsSorted[currentIndex + 1]);
-  };
+  // Preload adjacent points' photos in memory for instant navigation
+  useEffect(() => {
+    if (currentIndex < 0) return;
+    if (currentIndex + 1 < pointsSorted.length) {
+      preloadPointPhotos(pointsSorted[currentIndex + 1]);
+    }
+    if (currentIndex - 1 >= 0) {
+      preloadPointPhotos(pointsSorted[currentIndex - 1]);
+    }
+  }, [currentIndex]);
 
-  const handlePrev = () => {
-    if (hasPrev) setSelectedPoint(pointsSorted[currentIndex - 1]);
-  };
+  const handleNext = useCallback(() => {
+    setSelectedPoint(prev => {
+      if (!prev) return prev;
+      const idx = pointsSorted.findIndex(p => p.id === prev.id);
+      return idx >= 0 && idx < pointsSorted.length - 1 ? pointsSorted[idx + 1] : prev;
+    });
+  }, []);
+
+  const handlePrev = useCallback(() => {
+    setSelectedPoint(prev => {
+      if (!prev) return prev;
+      const idx = pointsSorted.findIndex(p => p.id === prev.id);
+      return idx > 0 ? pointsSorted[idx - 1] : prev;
+    });
+  }, []);
+
+  const handleSelectMapPoint = useCallback((point: NiloPoint | null) => {
+    setSelectedPoint(point);
+    setFocusedPointId(null);
+    setShowMobileIndex(false);
+  }, []);
 
   return (
     <div className="relative w-screen h-screen bg-editorial-bg text-editorial-text overflow-hidden font-sans">
@@ -44,79 +114,106 @@ export default function App() {
 
       {/* Header & Top Controls */}
       {!isMobile ? (
-        <header className="absolute top-0 left-0 right-0 z-[1000] p-4 md:p-8 flex justify-between items-start pointer-events-none">
-          {/* Left Side: Title & Index */}
-          <div className="flex flex-col gap-3 items-start">
-            <div className="pointer-events-auto bg-editorial-bg/80 backdrop-blur-md p-3 md:p-4 border border-editorial-text/10 shadow-sm">
-              <div className="text-[7px] md:text-[9px] uppercase tracking-[0.3em] font-bold text-brand-primary mb-1 md:mb-1.5 text-nowrap">Mapa interactivo</div>
-              <h1 className="text-base md:text-xl font-black uppercase tracking-tight leading-tight mb-1 md:mb-1.5 font-display max-w-[240px] md:max-w-xs">
+        <header className="absolute top-0 left-0 right-0 z-[1000] p-4 md:p-6 flex justify-between items-start pointer-events-none">
+          {/* Left Side: Unified Editorial Panel & Collapsible Index */}
+          <div className="flex flex-col gap-2.5 items-start w-72 md:w-80">
+            <div className="pointer-events-auto w-full bg-editorial-bg/95 backdrop-blur-md p-4 md:p-5 border border-editorial-text/15 rounded-xl shadow-md">
+              <div className="text-[9px] md:text-[10px] uppercase tracking-[0.28em] font-bold text-brand-primary mb-1.5">
+                Mapa interactivo
+              </div>
+              <h1 className="text-base md:text-lg font-black uppercase tracking-tight leading-snug mb-2.5 font-display">
                 Lo que vuelve a mirarnos. <span className="text-brand-primary">El Cordobazo en la lente de Nilo Silvestrone</span>
               </h1>
-              <div className="h-0.5 w-12 md:w-16 bg-brand-primary" />
-            </div>
-
-            {/* Indicaciones / Información de navegación */}
-            <div className="pointer-events-auto bg-editorial-bg/80 backdrop-blur-md p-3 md:p-4 border border-editorial-text/10 shadow-sm max-w-[240px] md:max-w-xs flex flex-col gap-2.5">
-              <p className="text-[9px] md:text-[11px] text-editorial-text/80 leading-relaxed">
-                Tocá los puntos georreferenciados para ver las fotos de Nilo Silvestrone e imágenes actuales del lugar. También podés navegar por el índice del archivo.
+              <div className="h-0.5 w-14 bg-brand-primary mb-3" />
+              <p className="text-[11px] text-editorial-text/80 leading-relaxed mb-1.5">
+                Tocá los puntos georreferenciados para comparar las fotos de 1969 con imágenes actuales del lugar, o recorré el índice del archivo.
               </p>
-              <p className="text-[9px] md:text-[11px] font-bold text-brand-primary leading-relaxed">
-                Ingresá a la Exploración Inmersiva para ver las fotos a pantalla completa.
+              <p className="text-[11px] font-bold text-brand-primary leading-snug">
+                Ingresá a la Exploración Inmersiva para pantalla completa.
               </p>
             </div>
 
-            {/* Permanent Index List */}
-            <div className="pointer-events-auto w-64 max-h-[50vh] flex flex-col gap-2 bg-editorial-bg/40 backdrop-blur-sm p-2 border border-editorial-text/10 rounded-xl">
-              <div className="text-[7px] uppercase tracking-[0.4em] font-bold text-brand-primary mb-0.5 border-b border-editorial-text/10 pb-0.5 flex items-center gap-1.5">
-                 <MapPin size={8} /> Indice del archivo
-              </div>
-              <div className="flex flex-col gap-0.5 overflow-y-auto pr-1.5 custom-scrollbar">
-                {pointsSorted.map((point) => (
-                  <button
-                    key={point.id}
-                    onClick={() => {
-                      setSelectedPoint(point);
-                      setFocusedPointId(point.id);
-                    }}
-                    className={`group flex items-center gap-2.5 p-1.5 text-left transition-all border rounded-md ${
-                      selectedPoint?.id === point.id 
-                        ? "bg-editorial-text text-white border-editorial-text shadow-sm" 
-                        : "bg-editorial-bg/80 backdrop-blur-md border-editorial-text/5 hover:border-editorial-text/20 hover:bg-white"
-                    }`}
-                  >
-                    <span className={`font-mono text-[7px] font-bold ${
-                      selectedPoint?.id === point.id ? "text-brand-primary" : "opacity-30"
-                    }`}>
-                      {point.order.toString().padStart(2, '0')}
-                    </span>
-                    <div className="flex-1 truncate">
-                      <h4 className="text-[8px] font-bold uppercase tracking-widest leading-none truncate">
-                        {point.title}
-                      </h4>
-                    </div>
-                  </button>
-                ))}
-              </div>
+            {/* Collapsible Archive Index List */}
+            <div className="pointer-events-auto w-full flex flex-col bg-editorial-bg/95 backdrop-blur-md border border-editorial-text/15 rounded-xl shadow-md overflow-hidden">
+              <button
+                onClick={() => setIsIndexCollapsed(!isIndexCollapsed)}
+                className="w-full px-4 py-2.5 flex items-center justify-between text-left border-b border-editorial-text/10 hover:bg-black/5 transition-colors cursor-pointer"
+              >
+                <div className="flex items-center gap-2 text-[10px] uppercase tracking-[0.25em] font-bold text-brand-primary">
+                  <MapPin size={12} />
+                  <span>Índice del archivo ({pointsSorted.length})</span>
+                </div>
+                {isIndexCollapsed ? (
+                  <ChevronDown size={14} className="text-editorial-text/60" />
+                ) : (
+                  <ChevronUp size={14} className="text-editorial-text/60" />
+                )}
+              </button>
+
+              {!isIndexCollapsed && (
+                <div className="flex flex-col gap-1 max-h-[42vh] overflow-y-auto p-2 custom-scrollbar">
+                  {pointsSorted.map((point) => {
+                    const isActive = selectedPoint?.id === point.id;
+                    return (
+                      <button
+                        key={point.id}
+                        onClick={() => {
+                          setSelectedPoint(point);
+                          setFocusedPointId(point.id);
+                        }}
+                        className={`group flex items-center gap-2.5 px-2.5 py-2 text-left transition-all border rounded-lg ${
+                          isActive
+                            ? "bg-editorial-text text-white border-editorial-text shadow-sm"
+                            : "bg-white/80 border-editorial-text/10 hover:border-brand-primary/40 hover:bg-white"
+                        }`}
+                      >
+                        <span
+                          className={`w-5 h-5 rounded-full flex items-center justify-center font-mono text-[10px] font-bold flex-shrink-0 transition-colors ${
+                            isActive
+                              ? "bg-brand-primary text-white"
+                              : "bg-brand-primary/15 text-brand-primary group-hover:bg-brand-primary group-hover:text-white"
+                          }`}
+                        >
+                          {point.order.toString().padStart(2, '0')}
+                        </span>
+                        <div className="flex-1 min-w-0">
+                          <h4 className="text-[11px] font-bold uppercase tracking-wider leading-tight truncate">
+                            {point.title}
+                          </h4>
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
             </div>
           </div>
 
           {/* Right Side: Navigation & About */}
           <div className="flex flex-col gap-2 items-end">
-            <div className="flex gap-1.5 pointer-events-auto">
+            <div className="flex gap-2 pointer-events-auto">
+              <button
+                onClick={handleResetOverview}
+                className="flex items-center gap-2 px-3.5 h-10 bg-editorial-bg/95 backdrop-blur-md border border-editorial-text/20 hover:bg-editorial-text hover:text-white transition-all shadow-lg group rounded-lg cursor-pointer"
+                title="Centrar vista general del mapa"
+              >
+                <RotateCcw size={13} className="text-brand-primary group-hover:text-white transition-colors" />
+                <span className="text-[10px] font-bold uppercase tracking-wider">Vista general</span>
+              </button>
               <button 
                 onClick={() => setShowAbout(true)}
-                className="flex items-center gap-2 px-4 h-10 bg-editorial-bg border border-editorial-text/20 hover:bg-editorial-text hover:text-white transition-all shadow-lg group rounded-lg"
+                className="flex items-center gap-2 px-4 h-10 bg-editorial-bg/95 backdrop-blur-md border border-editorial-text/20 hover:bg-editorial-text hover:text-white transition-all shadow-lg group rounded-lg cursor-pointer"
                 title="Sobre el proyecto"
               >
                 <Info size={14} className="text-brand-primary group-hover:text-white transition-colors" />
-                <span className="text-[8px] md:text-[9px] font-bold uppercase tracking-widest">Sobre el proyecto</span>
+                <span className="text-[10px] font-bold uppercase tracking-wider">Sobre el proyecto</span>
               </button>
               <button 
                 onClick={() => setShowInstructions(!showInstructions)}
-                className="w-10 h-10 bg-editorial-bg border border-editorial-text/20 flex items-center justify-center hover:bg-editorial-text hover:text-white transition-all shadow-lg rounded-lg"
+                className="w-10 h-10 bg-editorial-bg/95 backdrop-blur-md border border-editorial-text/20 flex items-center justify-center hover:bg-editorial-text hover:text-white transition-all shadow-lg rounded-lg cursor-pointer"
                 title="Guía de uso"
               >
-                <HelpCircle size={14} />
+                <HelpCircle size={15} />
               </button>
             </div>
           </div>
@@ -168,12 +265,10 @@ export default function App() {
       <main className="absolute inset-0 w-full h-full z-0 overflow-hidden">
         <LeafletMap 
           points={NILO_POINTS} 
-          onSelectPoint={(point) => {
-            setSelectedPoint(point);
-            setFocusedPointId(null);
-            setShowMobileIndex(false);
-          }}
+          onSelectPoint={handleSelectMapPoint}
           selectedPoint={selectedPoint}
+          isMobile={isMobile}
+          resetViewSignal={resetViewSignal}
           onNext={handleNext}
           onPrev={handlePrev}
           hasNext={hasNext}
@@ -297,6 +392,8 @@ export default function App() {
                 current={selectedPoint.currentPhoto}
                 title={selectedPoint.title}
                 description={selectedPoint.description}
+                pointOrder={selectedPoint.order}
+                totalPoints={pointsSorted.length}
                 lat={selectedPoint.lat}
                 lng={selectedPoint.lng}
                 onNext={handleNext}
