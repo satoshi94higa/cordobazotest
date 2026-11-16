@@ -275,6 +275,7 @@ export default function App() {
           hasPrev={hasPrev}
           selectedPointId={focusedPointId || selectedPoint?.id}
         />
+        <div className="map-vignette absolute inset-0 pointer-events-none z-[400]" />
       </main>
 
       {/* Mobile Index Drawer */}
@@ -394,6 +395,8 @@ export default function App() {
                 description={selectedPoint.description}
                 pointOrder={selectedPoint.order}
                 totalPoints={pointsSorted.length}
+                allPoints={pointsSorted}
+                onSelectPoint={handleSelectMapPoint}
                 lat={selectedPoint.lat}
                 lng={selectedPoint.lng}
                 onNext={handleNext}

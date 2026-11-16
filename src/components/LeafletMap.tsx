@@ -1,4 +1,4 @@
-import { MapContainer, TileLayer, Marker, Popup, useMap, ZoomControl, useMapEvents, Tooltip } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap, ZoomControl, useMapEvents, Tooltip } from 'react-leaflet';
 import L from 'leaflet';
 import { NiloPoint } from '@/src/data';
 import { useEffect, useMemo, memo } from 'react';
@@ -110,6 +110,21 @@ export const LeafletMap = memo(function LeafletMap({
     [points, selectedPointId]
   );
 
+  // Historical route lines: downtown march axis (1-5, 7-13) and Santa Isabel feeder (6 -> 1)
+  const { centerRoutePositions, renaultFeederPositions } = useMemo(() => {
+    const sorted = [...points].sort((a, b) => a.order - b.order);
+    const centerPoints = sorted.filter(p => p.order !== 6);
+    const renault = sorted.find(p => p.order === 6);
+    const firstCenter = sorted.find(p => p.order === 1);
+    return {
+      centerRoutePositions: centerPoints.map(p => [p.lat, p.lng] as [number, number]),
+      renaultFeederPositions:
+        renault && firstCenter
+          ? [[renault.lat, renault.lng] as [number, number], [firstCenter.lat, firstCenter.lng] as [number, number]]
+          : [],
+    };
+  }, [points]);
+
   return (
     <div className="absolute inset-0 w-full h-full z-0 overflow-hidden">
       <MapContainer 
@@ -147,6 +162,30 @@ export const LeafletMap = memo(function LeafletMap({
         <ZoomControl position="bottomright" />
         
         <MapEvents onMapClick={() => onSelectPoint(null)} />
+
+        {/* Subtle historical route connecting the archival points */}
+        {centerRoutePositions.length > 1 && (
+          <Polyline
+            positions={centerRoutePositions}
+            pathOptions={{
+              color: '#B91C1C',
+              weight: 2,
+              opacity: 0.35,
+              dashArray: '5, 7',
+            }}
+          />
+        )}
+        {renaultFeederPositions.length === 2 && (
+          <Polyline
+            positions={renaultFeederPositions}
+            pathOptions={{
+              color: '#B91C1C',
+              weight: 1.5,
+              opacity: 0.25,
+              dashArray: '3, 8',
+            }}
+          />
+        )}
         
         {points.map((point) => {
           const isSelected = selectedPointId === point.id;
@@ -160,9 +199,21 @@ export const LeafletMap = memo(function LeafletMap({
               }}
               zIndexOffset={isSelected ? 1000 : 0}
             >
-              <Tooltip direction="top" offset={[0, -10]} opacity={1}>
-                <div className="px-2 py-1 bg-white font-bold text-[10px] uppercase tracking-wider border border-brand-primary/20 shadow-sm">
-                  {point.title}
+              <Tooltip direction="top" offset={[0, -12]} opacity={1} className="editorial-tooltip">
+                <div className="flex items-center gap-2.5 p-1.5 pr-3 bg-editorial-text text-white rounded-xl shadow-xl border border-white/15 max-w-[240px]">
+                  <img
+                    src={point.historicalPhoto}
+                    alt={point.title}
+                    className="w-10 h-10 object-cover rounded-lg grayscale sepia-[0.2] border border-white/20 flex-shrink-0"
+                  />
+                  <div className="min-w-0">
+                    <div className="text-[8px] font-mono uppercase tracking-[0.2em] text-brand-primary font-bold">
+                      Punto {point.order.toString().padStart(2, '0')}
+                    </div>
+                    <div className="text-[10px] font-bold uppercase tracking-wider leading-tight truncate">
+                      {point.title}
+                    </div>
+                  </div>
                 </div>
               </Tooltip>
             </Marker>
@@ -179,7 +230,7 @@ export const LeafletMap = memo(function LeafletMap({
             offset={[0, -20]}
             maxWidth={520}
           >
-            <div className="bg-editorial-bg shadow-2xl rounded-2xl overflow-hidden border border-editorial-text/15 flex flex-col w-[400px] md:w-[480px]">
+            <div className="bg-editorial-bg shadow-2xl rounded-xl overflow-hidden border border-editorial-text/15 flex flex-col w-[400px] md:w-[480px]">
               <div className="px-3.5 py-2.5 border-b border-editorial-text/10 flex justify-between items-center bg-editorial-text text-white gap-2">
                 <div className="flex items-center gap-2.5 min-w-0">
                   <span className="px-2 py-0.5 rounded bg-brand-primary text-white font-mono text-[10px] font-bold tracking-wider flex-shrink-0">
@@ -232,6 +283,8 @@ export const LeafletMap = memo(function LeafletMap({
                   description={selectedPoint.description}
                   pointOrder={selectedPoint.order}
                   totalPoints={points.length}
+                  allPoints={points}
+                  onSelectPoint={onSelectPoint}
                   lat={selectedPoint.lat}
                   lng={selectedPoint.lng}
                   onNext={onNext || (() => {})}

@@ -5,6 +5,7 @@ import { Columns, Layers, ArrowLeftRight, Maximize2, X, LocateFixed, Map as MapI
 import { MapContainer, TileLayer, Marker, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import { cn } from '@/src/lib/utils';
+import { NiloPoint } from '@/src/data';
 
 // Simple fix for marker icon in nested components
 const miniMapIcon = L.divIcon({
@@ -29,6 +30,8 @@ interface PhotoSliderProps {
   description: string;
   pointOrder?: number;
   totalPoints?: number;
+  allPoints?: NiloPoint[];
+  onSelectPoint?: (point: NiloPoint) => void;
   lat?: number;
   lng?: number;
   onNext?: () => void;
@@ -133,11 +136,11 @@ const ViewerContent = memo(function ViewerContent({
                 <div 
                   ref={badge1969Ref}
                   className={cn(
-                    "absolute left-3 z-20 bg-black/75 backdrop-blur-md text-white text-[9px] md:text-[10px] font-bold uppercase px-2 py-1 md:px-2 md:py-0.5 tracking-[0.2em] border border-white/20 rounded shadow-xl pointer-events-none transition-opacity duration-300",
+                    "absolute left-3 z-20 bg-black/75 backdrop-blur-md text-white text-[9px] md:text-[10px] font-bold uppercase px-2.5 py-1 tracking-[0.2em] border border-white/20 rounded-md shadow-xl pointer-events-none transition-opacity duration-300",
                     sliderPosition < 15 ? "opacity-0" : "opacity-100",
                     isModal ? "top-4 md:top-6 md:left-6" : "bottom-3 md:bottom-4 md:left-4"
                   )}
-                >1969</div>
+                >{isModal ? '1969 · Nilo Silvestrone' : '1969'}</div>
 
                 {/* Current present photo on top, clipped via CSS variable */}
                 <img 
@@ -157,22 +160,22 @@ const ViewerContent = memo(function ViewerContent({
                 <div 
                   ref={badgeHoyRef}
                   className={cn(
-                    "absolute right-3 z-20 bg-brand-primary backdrop-blur-md text-white text-[9px] md:text-[10px] font-bold uppercase px-2 py-1 md:px-2 md:py-0.5 tracking-[0.2em] border border-white/20 rounded shadow-xl pointer-events-none transition-opacity duration-300",
+                    "absolute right-3 z-20 bg-brand-primary backdrop-blur-md text-white text-[9px] md:text-[10px] font-bold uppercase px-2.5 py-1 tracking-[0.2em] border border-white/20 rounded-md shadow-xl pointer-events-none transition-opacity duration-300",
                     sliderPosition > 85 ? "opacity-0" : "opacity-100",
                     isModal ? "top-4 md:top-6 md:right-6" : "bottom-3 md:bottom-4 md:right-4"
                   )}
-                >Hoy</div>
+                >{isModal ? 'Actualidad · Córdoba' : 'Hoy'}</div>
 
                 {/* Split bar line */}
                 <div 
                   className={cn(
-                    "absolute top-0 bottom-0 w-0.5 bg-white shadow-[0_0_8px_rgba(0,0,0,0.5)] z-30 pointer-events-none transition-colors duration-200 group-hover/viewer:bg-brand-primary will-change-[left]",
+                    "absolute top-0 bottom-0 w-px bg-white/90 shadow-[0_0_10px_rgba(0,0,0,0.65)] z-30 pointer-events-none transition-colors duration-200 group-hover/viewer:bg-brand-primary will-change-[left]",
                     !isDragging && "transition-[left] duration-300 ease-out"
                   )}
                   style={{ left: 'var(--slider-pos)' }}
                 />
 
-                {/* Interactive Handle */}
+                {/* Interactive Handle - minimal vertical archival grip */}
                 <div 
                   className={cn(
                     "absolute top-1/2 -translate-y-1/2 -translate-x-1/2 z-40 select-none pointer-events-none will-change-[left]",
@@ -180,8 +183,9 @@ const ViewerContent = memo(function ViewerContent({
                   )}
                   style={{ left: 'var(--slider-pos)' }}
                 >
-                  <div className="w-8 h-8 rounded-full bg-white border border-brand-primary shadow-[0_4px_12px_rgba(0,0,0,0.4)] flex items-center justify-center text-brand-primary transition-transform duration-100 scale-100 group-hover/viewer:scale-110 active:scale-95">
-                    <ArrowLeftRight size={14} />
+                  <div className="w-5 h-11 rounded-full bg-editorial-text/90 border border-white/80 shadow-[0_4px_16px_rgba(0,0,0,0.5)] flex items-center justify-center gap-0.5 transition-transform duration-150 group-hover/viewer:scale-110 group-hover/viewer:border-brand-primary">
+                    <span className="w-px h-4 bg-white/70 rounded-full" />
+                    <span className="w-px h-4 bg-white/70 rounded-full" />
                   </div>
                 </div>
               </div>
@@ -212,9 +216,9 @@ const ViewerContent = memo(function ViewerContent({
                   <div className="text-white/20 text-[10px] uppercase tracking-widest font-bold text-center p-2">Foto histórica no disponible</div>
                 )}
                 <div className={cn(
-                  "absolute left-3 z-20 bg-black/75 backdrop-blur-md text-white text-[9px] md:text-[10px] font-bold uppercase px-2 py-1 md:px-2 md:py-0.5 tracking-[0.2em] border border-white/20 rounded shadow-xl pointer-events-none",
+                  "absolute left-3 z-20 bg-black/75 backdrop-blur-md text-white text-[9px] md:text-[10px] font-bold uppercase px-2.5 py-1 tracking-[0.2em] border border-white/20 rounded-md shadow-xl pointer-events-none",
                   isModal ? "top-4 md:top-6 md:left-6" : "bottom-3 md:bottom-4 md:left-4"
-                )}>1969</div>
+                )}>{isModal ? '1969 · Nilo Silvestrone' : '1969'}</div>
               </div>
               <div 
                 className="relative flex items-center justify-center overflow-hidden bg-black h-full cursor-pointer hover:opacity-90 transition-opacity"
@@ -238,9 +242,9 @@ const ViewerContent = memo(function ViewerContent({
                   <div className="text-white/20 text-[10px] uppercase tracking-widest font-bold text-center p-2">Foto actual no disponible</div>
                 )}
                 <div className={cn(
-                  "absolute left-3 z-20 bg-brand-primary backdrop-blur-md text-white text-[9px] md:text-[10px] font-bold uppercase px-2 py-1 md:px-2 md:py-0.5 tracking-[0.2em] border border-white/20 rounded shadow-xl pointer-events-none",
+                  "absolute left-3 z-20 bg-brand-primary backdrop-blur-md text-white text-[9px] md:text-[10px] font-bold uppercase px-2.5 py-1 tracking-[0.2em] border border-white/20 rounded-md shadow-xl pointer-events-none",
                   isModal ? "top-4 md:top-6 md:left-6" : "bottom-3 md:bottom-4 md:left-4"
-                )}>Hoy</div>
+                )}>{isModal ? 'Actualidad · Córdoba' : 'Hoy'}</div>
               </div>
             </motion.div>
           )}
@@ -274,9 +278,13 @@ const ViewerContent = memo(function ViewerContent({
               )}
               {hasBothPhotos && (
                 <div className={cn(
-                  "absolute left-3 z-20 bg-black/75 backdrop-blur-md text-white text-[9px] md:text-[10px] font-bold uppercase px-2 py-1 md:px-2 md:py-0.5 tracking-[0.2em] border border-white/20 rounded shadow-xl",
+                  "absolute left-3 z-20 bg-black/75 backdrop-blur-md text-white text-[9px] md:text-[10px] font-bold uppercase px-2.5 py-1 tracking-[0.2em] border border-white/20 rounded-md shadow-xl",
                   isModal ? "top-4 md:top-6 md:left-6" : "bottom-3 md:bottom-4 md:left-4"
-                )}>{activeToggle === 'hist' ? '1969' : 'Hoy'}</div>
+                )}>
+                  {activeToggle === 'hist'
+                    ? (isModal ? '1969 · Nilo Silvestrone' : '1969')
+                    : (isModal ? 'Actualidad · Córdoba' : 'Hoy')}
+                </div>
               )}
             </motion.div>
           )}
@@ -428,6 +436,8 @@ export function PhotoSlider({
   description, 
   pointOrder,
   totalPoints = 13,
+  allPoints,
+  onSelectPoint,
   lat,
   lng,
   onNext, 
@@ -679,7 +689,7 @@ export function PhotoSlider({
                   </div>
                 </div>
                 
-                <div className="flex-1 flex items-center justify-center pt-18 pb-48 px-2 landscape:py-4 landscape:px-4 md:py-8 md:px-8">
+                <div className="flex-1 flex items-center justify-center pt-18 pb-48 px-2 landscape:py-4 landscape:px-4 md:py-6 md:px-8 min-h-0">
                   <ViewerContent
                     isModal
                     viewMode={viewMode}
@@ -698,6 +708,44 @@ export function PhotoSlider({
                     onTogglePhoto={handleTogglePhoto}
                   />
                 </div>
+
+                {/* Desktop 35mm Contact-Sheet Filmstrip */}
+                {allPoints && allPoints.length > 1 && onSelectPoint && (
+                  <div className="hidden md:flex items-center gap-1.5 px-6 pb-4 pt-2 overflow-x-auto custom-scrollbar justify-center border-t border-white/10 bg-black/80">
+                    {allPoints.map((pt) => {
+                      const isCurrent = pt.order === pointOrder;
+                      return (
+                        <button
+                          key={pt.id}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onSelectPoint(pt);
+                          }}
+                          title={`${pt.order.toString().padStart(2, '0')} · ${pt.title}`}
+                          className={cn(
+                            "relative group flex-shrink-0 w-14 h-10 rounded-md overflow-hidden border transition-all cursor-pointer",
+                            isCurrent
+                              ? "border-brand-primary ring-2 ring-brand-primary/60 scale-105 opacity-100"
+                              : "border-white/15 opacity-50 hover:opacity-95 hover:border-white/40"
+                          )}
+                        >
+                          <img
+                            src={pt.historicalPhoto}
+                            alt={pt.title}
+                            decoding="async"
+                            className="w-full h-full object-cover grayscale sepia-[0.2]"
+                          />
+                          <span className={cn(
+                            "absolute bottom-0.5 right-0.5 px-1 rounded text-[8px] font-mono font-bold leading-tight",
+                            isCurrent ? "bg-brand-primary text-white" : "bg-black/75 text-white/80"
+                          )}>
+                            {pt.order.toString().padStart(2, '0')}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
 
                 {/* Minimalist Mobile Overlay (Info + Nav) */}
                 <div className="md:hidden absolute bottom-4 left-0 right-0 z-50 flex flex-col pb-8 px-4 pointer-events-none landscape:flex-row landscape:items-end landscape:gap-4 landscape:pb-4">
